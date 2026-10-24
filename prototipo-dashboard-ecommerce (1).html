@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>E-Commerce AI: segmentación de clientes</title>
+<style>
+:root{--bg:#faf6ef;--surface:#fff;--ink:#2a2832;--muted:#6a6674;--line:#eee7da;--brand:#0b7f74;--soft:#def3ef;--act:#14b8a6;--warn:#b7700f;--bad:#d6455d;--ok:#1f8f63;
+--side:#fff;--sidetx:#3d3a47;--sideon:#0b7f74;--onbrand:#fff;--s0:#14b8a6;--s1:#8b7cf6;--s2:#f59e42;--s3:#4cc27a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17161c;--surface:#222029;--ink:#f2efe9;--muted:#a29eac;--line:#34313d;--brand:#3fd0bf;--soft:#1f3a37;--act:#3fd0bf;--warn:#f0b35c;--bad:#f27f93;--ok:#5fd6a0;--side:#1d1b23;--sidetx:#d9d5e0;--sideon:#3fd0bf;--onbrand:#10231f;--s0:#3fd0bf;--s1:#a99cff;--s2:#ffb566;--s3:#7bd99b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17161c;--surface:#222029;--ink:#f2efe9;--muted:#a29eac;--line:#34313d;--brand:#3fd0bf;--soft:#1f3a37;--act:#3fd0bf;--warn:#f0b35c;--bad:#f27f93;--ok:#5fd6a0;--side:#1d1b23;--sidetx:#d9d5e0;--sideon:#3fd0bf;--onbrand:#10231f;--s0:#3fd0bf;--s1:#a99cff;--s2:#ffb566;--s3:#7bd99b;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+button,select,input{font:inherit;color:inherit}button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.side{background:var(--side);color:var(--sidetx);padding:18px 12px;border-right:1px solid var(--line)}
+.logo{font-weight:700;font-size:16px;color:var(--brand);padding:4px 10px 2px}.logo small{display:block;font-weight:400;font-size:12px}
+.grp{font-size:12px;color:var(--muted);margin:16px 10px 6px}
+.nav button{display:block;width:100%;text-align:left;padding:8px 10px;border-radius:8px;color:var(--sidetx);border-left:3px solid transparent}
+.nav button:hover{background:var(--soft)}.nav button.on{background:var(--soft);color:var(--sideon);border-left-color:var(--sideon);font-weight:600}
+.main{min-width:0}
+.top{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:12px 28px;background:var(--surface);border-bottom:1px solid var(--line)}
+.top h1{font-size:18px;margin:0}
+.chip{display:inline-flex;gap:6px;align-items:center;padding:5px 12px;border-radius:999px;background:var(--soft);color:var(--brand);font-size:13px;font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.user{display:flex;align-items:center;gap:8px;font-size:14px}.av{width:30px;height:30px;border-radius:50%;background:var(--brand);color:var(--onbrand);display:grid;place-items:center;font-weight:700;font-size:12px}
+.content{padding:22px 28px 56px;max-width:1040px}
+h2{font-size:20px;margin:0 0 2px}h3{font-size:15px;margin:0 0 4px}
+.note{font-size:13px;color:var(--muted)}.lead{color:var(--muted);margin:0 0 12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+.row{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap}.row.l{justify-content:flex-start}
+.btn{padding:9px 16px;border-radius:8px;background:var(--brand);color:var(--onbrand);font-weight:600}.btn.act{background:var(--act);color:#10231f}
+.btn.sec{background:var(--surface);color:var(--ink);border:1px solid var(--line)}.btn[disabled]{opacity:.5;cursor:not-allowed}
+select,input[type=text],input[type=search]{padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);max-width:100%}
+.kpis{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:16px}.kpis .card{margin:0}
+.kpi b{display:block;font-size:24px;line-height:1.2}.kpi span{color:var(--muted);font-size:13px}
+.two{display:grid;gap:16px;grid-template-columns:1fr 1fr;margin-bottom:16px}.two .card{margin:0}
+.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px;min-width:480px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:600;font-size:13px}
+th button{font-weight:600;color:var(--muted)}
+.stack{display:flex;height:26px;border-radius:8px;overflow:hidden;margin:10px 0 6px}.stack i{display:block;height:100%}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.lt{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;color:#0f1f2b;font-size:12px;font-weight:700;margin-right:6px;vertical-align:middle}
+.segs{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));margin-bottom:16px}
+.seg{text-align:left;width:100%;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:12px;padding:14px}
+.seg.on{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 40%,transparent)}.seg b{font-size:22px;display:block}
+.bar{height:20px;border-radius:5px;background:var(--c);min-width:2px}
+.brow{display:grid;grid-template-columns:200px 1fr 64px;gap:10px;align-items:center;margin:8px 0;font-size:14px}
+.pair{display:grid;grid-template-columns:200px 1fr;gap:10px;align-items:center;margin:10px 0;font-size:14px}
+.b2{display:flex;align-items:center;gap:8px;margin:3px 0;font-size:12px;color:var(--muted)}.b2 span:first-child{width:78px}.b2 .bar{height:12px}
+.msg{padding:10px 14px;border-radius:8px;margin-top:12px;border-left:4px solid var(--c)}
+.msg.ok{--c:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}.msg.er{--c:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}.msg.wa{--c:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.badge{padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok);white-space:nowrap}
+.badge.w{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}.badge.o{background:var(--soft);color:var(--brand)}
+.help{background:var(--soft);border-radius:10px;padding:8px 14px;margin-bottom:16px;font-size:13px}.help summary{cursor:pointer;font-weight:600;color:var(--brand)}.help ul{margin:6px 0 2px;padding-left:18px}
+abbr{text-decoration:underline dotted;cursor:help}
+.prog{height:10px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:10px}.prog i{display:block;height:100%;width:0;background:var(--act);transition:width .15s}
+.steps{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}.steps div{border:1px solid var(--line);border-radius:10px;padding:12px}
+.fil{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.gl{position:fixed;right:16px;top:calc(60px + env(safe-area-inset-top,0px));width:min(360px,92vw);max-height:70vh;overflow:auto;z-index:6;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.gl dt{font-weight:700;margin-top:8px}.gl dd{margin:0;color:var(--muted);font-size:13px}
+pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;overflow:auto;font-size:13px;margin:8px 0}
+.dv{display:grid;grid-template-columns:200px 1fr 76px;gap:10px;align-items:center;margin:8px 0;font-size:14px}
+.dvt{position:relative;height:18px;background:var(--bg);border-radius:4px}
+.dvt::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--muted)}
+.dvt i{position:absolute;top:0;bottom:0;border-radius:4px}.dvt i.p{left:50%;background:var(--act)}.dvt i.n{right:50%;background:var(--s2)}
+.ins{text-align:left;width:100%;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:12px;padding:14px;display:block}
+.ins b{display:block;font-size:20px;margin:2px 0}.ins:hover{border-color:var(--c)}
+.rg{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin-bottom:16px}.rg .card{margin:0}
+.brow.w{grid-template-columns:200px 1fr 120px}
+@media(max-width:860px){.dv{grid-template-columns:1fr}.brow.w{grid-template-columns:1fr}}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;z-index:7}
+.toast.show{opacity:1}.hide{display:none}
+svg{width:100%;height:auto;display:block}
+@media(max-width:860px){.app{grid-template-columns:1fr}.side{padding:8px;position:sticky;top:env(safe-area-inset-top,0px);z-index:4}.logo,.grp{display:none}
+.nav{display:flex;gap:4px;overflow-x:auto}.nav button{white-space:nowrap;width:auto;border-left:0;border-bottom:3px solid transparent;border-radius:6px}.nav button.on{border-bottom-color:var(--sideon)}
+.top,.content{padding-left:16px;padding-right:16px}.two{grid-template-columns:1fr}.brow,.pair{grid-template-columns:1fr}}
+@media(max-width:640px){.rt{min-width:0}.rt thead{display:none}.rt tr{display:block;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;padding:4px 8px}.rt td{display:flex;justify-content:space-between;gap:8px;border:0;padding:4px 0}.rt td::before{content:attr(data-l);color:var(--muted)}}
+
+#nav .hide{display:none!important}
+.mode{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}.mode button{padding:8px 12px;background:var(--surface);color:var(--ink);border:0;cursor:pointer;font:inherit;font-size:13px}.mode button.on{background:var(--soft);font-weight:700;box-shadow:inset 0 -3px 0 var(--brand)}
+body.cli .tm,body.cli [data-s^="s"]{display:none!important}
+.vtabs{display:flex;gap:2px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin:10px 0 8px}.vtabs button{background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);padding:8px 10px;font:inherit;font-size:13px;cursor:pointer}.vtabs button.on{color:var(--ink);font-weight:700;border-bottom-color:var(--brand)}
+.vb{display:flex;align-items:flex-end;justify-content:space-around;gap:12px;height:180px;padding:22px 4px 0;border-bottom:1px solid var(--line)}
+.vg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}.vp{display:flex;align-items:flex-end;gap:6px;height:100%}
+.vp div{width:clamp(18px,5vw,40px);border-radius:6px 6px 0 0;position:relative;min-height:2px}.vp div span{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted);white-space:nowrap}
+.vl{display:flex;justify-content:space-around;gap:12px;margin-top:6px;font-size:12px;text-align:center}.vl span{flex:1}
+.lg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:8px 0}.lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+.stk{display:flex;height:22px;border-radius:5px;overflow:hidden;background:var(--bg)}.stk i{display:block;height:100%}
+.cust label{display:flex;gap:8px;align-items:center;margin:6px 0;font-size:14px}
+
+.kpis .card{border-top:4px solid var(--c);background:color-mix(in srgb,var(--c) 10%,var(--surface))}
+.kpis .card:nth-child(5n+1){--c:var(--s0)}.kpis .card:nth-child(5n+2){--c:var(--s1)}.kpis .card:nth-child(5n+3){--c:var(--s2)}.kpis .card:nth-child(5n+4){--c:var(--bad)}.kpis .card:nth-child(5n+5){--c:var(--s3)}
+.kpi b{font-size:26px}
+.card h3{font-size:16px}
+.foot{font-size:12px;color:var(--muted);margin:6px 0 0}
+body.cli .lead,body.cli p.note,body.cli .help{display:none}
+.help summary{cursor:pointer;font-size:13px}
+.req code{font-size:12px;background:var(--soft);padding:1px 5px;border-radius:5px}.req td{vertical-align:top}
+.filebtn{display:inline-block;padding:9px 16px;border-radius:8px;background:var(--brand);color:var(--onbrand);font-weight:600;cursor:pointer}
+.filebtn input{position:absolute;opacity:0;width:1px;height:1px}.filebtn:focus-within{outline:3px solid var(--brand);outline-offset:2px}
+
+.tg{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(235px,1fr))}
+.tp{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.ti{position:relative;height:120px;display:grid;place-items:center;font-size:56px;background:linear-gradient(135deg,color-mix(in srgb,var(--c) 38%,var(--surface)),color-mix(in srgb,var(--c) 12%,var(--surface)))}
+.tr{position:absolute;top:8px;left:8px;background:var(--ink);color:var(--surface);font-size:12px;font-weight:700;border-radius:999px;padding:2px 10px}
+.tt{position:absolute;top:8px;right:8px;background:var(--surface);color:var(--ok);font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px}
+.tb{padding:12px 14px;display:flex;flex-direction:column;gap:6px}.tb b{font-size:15px;line-height:1.3}
+.tm2{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}.tm2 strong{font-size:18px;color:var(--ink)}
+.tw{font-size:13px;border-radius:8px;padding:6px 9px;display:flex;justify-content:space-between;gap:8px}
+.tw.u{background:color-mix(in srgb,var(--ok) 13%,transparent)}.tw.d{background:color-mix(in srgb,var(--s2) 18%,transparent)}.tw span:last-child{color:var(--muted);white-space:nowrap}
+.badge.o{background:color-mix(in srgb,var(--s2) 22%,transparent);color:var(--warn)}
+
+.eg{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));margin-bottom:16px}
+.ev{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.ev .e{font-size:34px;line-height:1}.ev b{font-size:15px;line-height:1.3}
+.ev .up{font-size:28px;font-weight:800;color:var(--ok);line-height:1}
+.sb{position:relative;height:10px;border-radius:5px;background:var(--bg)}.sb i{position:absolute;left:0;top:0;bottom:0;border-radius:5px}.sb .a{background:color-mix(in srgb,var(--c) 35%,transparent)}.sb .d{background:var(--c);height:100%}
+.ev .m{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+
+.pn{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}
+.pn .kpis{grid-column:1/-1;margin:0;gap:12px}.pn .kpis .card{padding:10px 14px}.pn .kpi b{font-size:21px}
+.pw{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:7px;min-width:0}
+.pw h3{margin:0;font-size:15px}.s3c{grid-column:span 3}.s4c{grid-column:span 4}.s5c{grid-column:span 5}
+.lnk{font-size:12px;color:var(--brand);font-weight:600;padding:2px 4px;border-radius:6px}.lnk:hover{background:var(--soft)}
+.mr{display:grid;grid-template-columns:84px 1fr 46px;gap:8px;align-items:center;font-size:13px}.mr .bar{height:10px}.mr span:last-child{text-align:right;color:var(--muted)}
+.pv{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:center;font-size:13px}.pv .b2{margin:2px 0}.pv .b2 span:first-child{width:50px}
+.pt{display:grid;grid-template-columns:36px 1fr auto;gap:8px;align-items:center;font-size:13px}.pt .e{font-size:26px;line-height:1;text-align:center}.pt b{display:block;font-size:13px}.pt small{color:var(--muted)}.pt .r{text-align:right;color:var(--ok);font-weight:700}.pt .r small{display:block;font-weight:400}
+.ud{display:grid;grid-template-columns:62px 1fr;gap:6px 8px;font-size:13px;align-items:center}.ud i{font-style:normal;font-weight:700;font-size:12px;color:var(--muted)}
+.ud span b.up{color:var(--ok)}.ud span b.dn{color:var(--warn)}
+.pw>.row:first-child{flex-wrap:nowrap}.pw>.row:first-child h3{white-space:nowrap}
+@media(max-width:1000px){.s3c,.s4c,.s5c{grid-column:1/-1}}
+#c4 .two{grid-template-columns:1fr}th.hc{background:var(--c);color:#17161c;border-bottom:0}th.hc:first-of-type{border-radius:8px 0 0 0}th.hc .note,th.hc b{color:#17161c}
+.lt{box-shadow:0 0 0 2px rgba(255,255,255,.55)}
+@media(max-width:860px){.app{grid-template-columns:minmax(0,1fr)}.main,.side{min-width:0}.side{max-width:100vw}.top{padding:10px 16px}.top h1{width:100%}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi b{font-size:20px}.pn .kpi b{font-size:18px}.tg{grid-template-columns:repeat(2,minmax(0,1fr))}.ti{height:90px;font-size:44px}.tb{padding:10px}.eg{grid-template-columns:1fr}.dv{grid-template-columns:1fr}.mr{grid-template-columns:70px 1fr 40px}}
+@media(max-width:640px){#c4 .rt{min-width:600px}#c4 .rt thead{display:table-header-group}#c4 .rt tr{display:table-row;border:0;margin:0;padding:0;border-radius:0}#c4 .rt td{display:table-cell;border-bottom:1px solid var(--line);padding:9px 8px}#c4 .rt td::before{content:none}.tg{grid-template-columns:1fr}.pt{grid-template-columns:32px 1fr}.pt .r{grid-column:2;text-align:left}.pt .r small{display:inline;margin-left:6px}}
+@media(max-width:640px){.top .user{display:none}.top .btn{padding:7px 10px;font-size:13px}.mode button{padding:7px 10px}.top>.row{width:100%;gap:8px}}
+@media(max-width:640px){.rt,.rt tbody{display:block;width:100%;min-width:0}#c4 .rt{display:table;min-width:600px}#c4 .rt tbody{display:table-row-group}.rt td{text-align:right}.rt td::before{text-align:left}#c4 .rt td{text-align:left}}
+@media(max-width:640px){#c4 .two .rt{min-width:0;font-size:12.5px}#c4 .two .rt th,#c4 .two .rt td{padding:8px 5px}}
+thead th{background:var(--c,var(--s0));color:#17161c;font-weight:700;border-bottom:0}thead th button{color:#17161c;font-weight:700}
+thead th:nth-child(4n+1){--c:var(--s0)}thead th:nth-child(4n+2){--c:var(--s1)}thead th:nth-child(4n+3){--c:var(--s2)}thead th:nth-child(4n+4){--c:var(--s3)}
+thead th:first-child{border-radius:8px 0 0 0}thead th:last-child{border-radius:0 8px 0 0}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+ <div class="logo">E-Commerce AI<small>Segmentación de clientes</small></div>
+ <nav class="nav" id="nav" aria-label="Secciones">
+  <div class="grp" style="margin-top:4px">Para el cliente</div>
+  <button class="on" data-s="c9">Panel</button><button data-s="c0">Resumen</button><button data-s="c1">Recomendaciones</button><button data-s="c8">Tendencias</button><button data-s="c2">Perfiles oficiales</button><button data-s="c3">Clientes en riesgo</button><button data-s="c4">Suscripciones</button><button data-s="c5">Marketing y redes</button><button data-s="c6">Dispositivos y pagos</button><button data-s="c7">Satisfacción</button>
+  <div class="grp">Segmentación con IA</div>
+  <button data-s="s0">Resumen de segmentos</button><button data-s="s5">Perfiles de segmentos</button><button data-s="s6">Comparar segmentos</button><button data-s="s7">Comparación con reglas</button><button data-s="s8">Consulta de clientes</button><button data-s="s9">Exportación</button>
+  <div class="grp">Configuración del equipo</div>
+  <button data-s="s1">Cargar archivo</button><button data-s="s2">Calidad y preparación</button><button data-s="s3">Diccionario de datos</button><button data-s="s4">Agrupamiento</button>
+  <div class="grp">Proyecto</div>
+  <button data-s="s10">Datos del equipo</button>
+ </nav>
+</aside>
+<div class="main">
+ <header class="top">
+  <h1 id="title">Panel</h1>
+  <div class="row"><button class="btn sec" id="thm" data-th="1" aria-label="Cambiar entre modo claro y oscuro">☾ Oscuro</button><div class="mode" id="mode" role="group" aria-label="Vista"><button data-m="cli" class="on">Vista cliente</button><button data-m="eq">Vista equipo</button></div><button class="btn sec tm" data-a="cust" aria-expanded="false">Elegir qué ve el cliente</button><span class="chip tm"><i class="dot"></i>E-commerce_Customer_Segmentation_2026.csv · 50,000 registros</span>
+  <button class="btn sec" data-a="gl" aria-expanded="false">Glosario</button>
+  <span class="user"><span class="av">EM</span>Equipo de marketing</span></div>
+ </header>
+ <div class="card gl hide" id="gl"><div class="row"><h3>Glosario</h3><button class="btn sec" data-a="gl">Cerrar</button></div><dl>
+  <dt>Segmento</dt><dd>Grupo de clientes con comportamientos parecidos, creado por el modelo.</dd>
+  <dt>Agrupamiento</dt><dd>Técnica que junta clientes parecidos sin que nadie defina antes los grupos.</dd>
+  <dt>Separación entre grupos</dt><dd>De 0 a 1: qué tan distintos son los grupos entre sí. Cerca de 0 significa grupos que se traslapan.</dd>
+  <dt>Error interno</dt><dd>Qué tan lejos están los clientes del centro de su grupo. Baja al usar más grupos, por eso no basta para elegir.</dd>
+  <dt>Estabilidad</dt><dd>Qué tanto se repiten los mismos grupos al volver a ejecutar el modelo. Más cerca de 1 es mejor.</dd>
+  <dt>RFM</dt><dd>Clasificación por qué tan reciente, frecuente y valioso es un cliente.</dd>
+  <dt>Etiqueta original</dt><dd>Clasificación que ya traía el archivo. Solo se usa para comparar.</dd>
+ </dl></div>
+ <div class="content">
+ <div class="card cust tm hide" id="cust"><div class="row"><h3>Elegir qué ve el cliente</h3><button class="btn sec" data-a="cust">Cerrar</button></div><p class="note">Marca las secciones y bloques que aparecen en la Vista cliente. La elección se recuerda en este navegador.</p><div id="custl"></div></div>
+
+ 
+ <section id="c9" class="screen"><p class="lead">Lo más importante en una sola pantalla.</p><div id="c9b"></div></section>
+
+ <section id="c0" class="screen hide"><p class="lead">Resumen</p><div id="c0b"></div><div id="c0v"></div><div id="c0r"></div></section>
+
+ <section id="c1" class="screen hide"><p class="lead">Qué impulsar, dónde y cuándo. Son propuestas: el sistema no cambia precios.</p>
+  <div class="rg" id="c1a"></div>
+  <div class="card"><div class="fil"><label class="note">Zona <select id="rz"></select></label><label class="note">Temporada local <select id="rs"><option>Otoño</option><option>Invierno</option><option>Primavera</option><option>Verano</option></select></label></div>
+   <h3>Categorías que más y menos pesan en la zona</h3><p class="note" id="rzn"></p><div id="rzc"></div></div>
+  <div class="card scroll"><h3>Plan para la temporada elegida</h3><p class="note">Las categorías de cada temporada son una hipótesis del calendario comercial, no un dato del archivo. Se cruzan con la preferencia real de los clientes de la zona.</p>
+   <table class="rt"><thead><tr><th>Categoría</th><th>Preferencia en la zona</th><th>Qué hacer</th></tr></thead><tbody id="rst"></tbody></table></div>
+  <div class="card scroll"><h3>Resumen por país</h3><table class="rt"><thead><tr><th>País</th><th>Clientes</th><th>Categoría líder</th><th>Categoría más baja</th><th>Gasto promedio</th><th>% en riesgo</th><th>Satisfacción</th></tr></thead><tbody id="rct"></tbody></table></div>
+ </section>
+
+ <section id="c8" class="screen hide"><p class="lead">Productos en alza y cuándo subir o bajar su precio.</p>
+  <div class="card"><div class="row"><div class="fil"><label class="note">Zona <select id="tz"></select></label><label class="note">Categoría <select id="tc"></select></label><label class="note">Mostrar <select id="tn"><option value="10">Top 10</option><option value="99">Todos</option></select></label></div><span class="badge o">Categoría: dato real · Producto, precio y fechas: ejemplo</span></div></div>
+  <div class="tg" id="tgrid"></div></section>
+
+ <section id="c2" class="screen hide"><p class="lead">Clasificaciones oficiales del archivo.</p>
+  <div class="card"><div class="fil"><label class="note">Clasificación <select id="pf"></select></label><label class="note">Gráfica <select id="pm"></select></label></div>
+   <p class="note" id="pfn"></p><div id="pfb"></div></div>
+  <div class="card scroll"><table class="rt"><thead><tr><th>Perfil</th><th>Clientes</th><th>Gasto promedio</th><th>Compras</th><th>Pedido promedio</th><th>Días sin comprar</th><th>Satisfacción</th><th>% en riesgo</th><th>Valor del cliente</th></tr></thead><tbody id="pft"></tbody></table></div>
+ </section>
+
+ <section id="c3" class="screen hide"><p class="lead">A quién contactar primero y por qué.</p>
+  <div class="msg wa" style="margin:0 0 16px"><b>Riesgo del archivo</b> (Alto y Muy alto), no una predicción nueva.</div>
+  <div class="kpis" id="c3k"></div>
+  <div class="two"><div class="card"><h3>Por qué están en riesgo</h3><p class="note">Porcentaje de clientes que cumple cada señal.</p><div id="c3w"></div></div>
+   <div class="card scroll"><h3>En promedio</h3><table class="rt"><thead><tr><th>Señal</th><th>En riesgo</th><th>Resto</th></tr></thead><tbody id="c3a"></tbody></table></div></div>
+  <div class="card scroll"><h3>Clientes en riesgo por nivel de suscripción</h3><table class="rt"><thead><tr><th>Nivel</th><th>En riesgo</th><th>% del nivel</th><th>Días sin comprar</th><th>Satisfacción</th><th>Valor en juego</th><th>Acción sugerida</th></tr></thead><tbody id="c3t"></tbody></table></div>
+  <div class="card"><h3>Lista de clientes en riesgo</h3>
+   <div class="fil"><select id="rt" aria-label="Nivel"></select><select id="rr" aria-label="Señal"></select><select id="ro" aria-label="Ordenar"><option value="score">Mayor puntuación de riesgo</option><option value="days">Más días sin comprar</option><option value="sat">Menor satisfacción</option></select></div>
+   <p class="note" id="c3c"></p><div class="scroll"><table class="rt"><thead><tr><th>Cliente</th><th>Nivel</th><th>País</th><th>Días sin comprar</th><th>Satisfacción</th><th>Quejas</th><th>Devoluciones</th><th>Riesgo</th><th>Por qué</th></tr></thead><tbody id="c3r"></tbody></table></div>
+   <div class="row" style="margin-top:8px"><span class="note" id="c3p"></span><span class="row"><button class="btn sec" data-rp="-1">Anterior</button><button class="btn sec" data-rp="1">Siguiente</button></span></div></div>
+ </section>
+
+ <section id="c4" class="screen hide"><p class="lead">Nivel de lealtad = suscripción. “Sin nivel” = sin suscripción.</p>
+  <div id="c4m"></div>
+  <div class="card"><h3>Clientes y gasto por nivel</h3><p class="note">Qué parte de los clientes y qué parte del gasto total aporta cada nivel.</p><div id="c4b"></div></div>
+  <div class="card scroll"><h3>Todos los niveles</h3><table class="rt"><thead id="c4h"></thead><tbody id="c4t"></tbody></table></div>
+  <div class="two"><div class="card scroll"><h3>Con suscripción frente a sin suscripción</h3><table class="rt"><thead><tr><th>Indicador</th><th class="hc" style="--c:var(--s0)">Con suscripción</th><th class="hc" style="--c:var(--s2)">Sin suscripción</th><th class="hc" style="--c:var(--s1)">Comparativa</th></tr></thead><tbody id="c4a"></tbody></table></div>
+   <div class="card scroll"><div class="fil"><select id="c4x" aria-label="Primer nivel"></select><select id="c4y" aria-label="Segundo nivel"></select></div><table class="rt"><thead><tr><th>Indicador</th><th id="c4xa" class="hc" style="--c:var(--s0)"></th><th id="c4ya" class="hc" style="--c:var(--s2)"></th><th class="hc" style="--c:var(--s1)">Comparativa</th></tr></thead><tbody id="c4c"></tbody></table></div></div>
+ </section>
+
+ <section id="c5" class="screen hide"><p class="lead">Dónde invertir en marketing.</p>
+  <div id="c5r"></div>
+  <div class="two"><div class="card"><h3>Embudo de correo</h3><p class="note">Promedio de los 50,000 clientes.</p><div id="c5f"></div></div>
+   <div class="card scroll"><h3>Según cuántas redes usa el cliente</h3><table class="rt"><thead><tr><th>Redes</th><th>Clientes</th><th>Conversión</th><th>Clics</th><th>Apertura</th><th>Gasto promedio</th></tr></thead><tbody id="c5b"></tbody></table></div></div>
+  <div class="card"><div class="row"><h3>Redes sociales</h3><label class="note">Ver <select id="c5m"><option value="1">Alcance (clientes que la usan)</option><option value="2" selected>Conversión</option><option value="3">Clics en correos</option><option value="4">Apertura de correos</option><option value="6">Gasto promedio</option></select></label></div><div id="c5n"></div></div>
+ </section>
+
+ <section id="c6" class="screen hide"><p class="lead">Qué usan más y menos los clientes.</p>
+  <div class="card"><label class="note">Ordenar por <select id="c6m"><option value="1">Clientes</option><option value="2">Pedido promedio (USD)</option><option value="3">Satisfacción</option><option value="4">Gasto promedio (USD)</option></select></label></div>
+  <div class="two"><div class="card"><h3>Dispositivo</h3><div id="c6d"></div><p class="note" id="c6dn"></p></div><div class="card"><h3>Método de pago</h3><div id="c6p"></div><p class="note" id="c6pn"></p></div></div>
+  <div class="card"><h3>Canal de compra</h3><div id="c6c"></div><p class="note" id="c6cn"></p></div>
+ </section>
+
+ <section id="c7" class="screen hide"><p class="lead">Cómo están y a quién atender primero.</p>
+  <div id="c7e"></div>
+  <div class="kpis" id="c7k"></div>
+  <div class="two"><div class="card"><h3>Cuántos clientes dan cada calificación</h3><div id="c7d"></div></div>
+   <div class="card scroll"><h3>Por nivel de suscripción</h3><table class="rt"><thead><tr><th>Nivel</th><th>Promedio</th><th>% satisfechos</th><th>% insatisfechos</th></tr></thead><tbody id="c7t"></tbody></table></div></div>
+  <div class="two"><div class="card"><h3>Qué la explica</h3><p class="note" id="c7e"></p><div class="scroll"><table class="rt"><thead><tr><th>Variable</th><th>Relación con la satisfacción</th></tr></thead><tbody id="c7c"></tbody></table></div></div>
+   <div class="card"><h3>Los clientes en riesgo están más insatisfechos</h3><div id="c7r"></div></div></div>
+  <div class="card"><h3>A quién atender primero</h3><div class="rg" id="c7g"></div></div>
+  <div class="card"><h3>Meta de satisfacción</h3><p class="note">Elige qué porcentaje de clientes satisfechos quieres alcanzar y mira cuántos clientes habría que mejorar.</p>
+   <div class="fil"><input type="range" id="c7s" min="41" max="70" value="55" aria-label="Meta de clientes satisfechos"><b id="c7sv"></b></div><p id="c7so"></p>
+   <p class="note">La base no tiene fechas, por lo que no puede mostrar cómo ha cambiado la satisfacción. Para medir la mejora hay que guardar cada encuesta con su fecha.</p></div>
+ </section>
+
+ <section id="s0" class="screen hide">
+  <p class="lead">Así están segmentados hoy tus 50,000 clientes. Cada sección tiene una función: revisa los datos, ejecuta el modelo, interpreta los segmentos y exporta resultados.</p>
+  <div class="msg wa" style="margin:0 0 16px"><b>Interpreta con cuidado.</b> La <abbr title="Qué tan distintos son los grupos entre sí">separación entre grupos</abbr> es baja (0.096) y los datos son sintéticos. Los perfiles muestran el método, no hallazgos sobre clientes reales.</div>
+  <div class="kpis">
+   <div class="card kpi"><span>Clientes analizados</span><b>50,000</b></div>
+   <div class="card kpi"><span>Segmentos generados</span><b>4</b></div>
+   <div class="card kpi"><span>Configuración activa</span><b id="kcfg">K-Means, k=4</b></div>
+   <div class="card kpi"><span>Variables usadas</span><b>8 de 53</b></div>
+   <div class="card kpi"><span>Gasto total analizado</span><b>$2,513 M</b></div>
+  </div>
+  <div class="two">
+   <div class="card"><h3>Estado del análisis</h3>
+    <p style="margin:6px 0"><span class="badge">Listo</span> Archivo validado (53 columnas)</p>
+    <p style="margin:6px 0"><span class="badge">Listo</span> Datos preparados (0 duplicados)</p>
+    <p style="margin:6px 0"><span class="badge">Listo</span> Agrupamiento ejecutado: 50,000 clientes con segmento</p></div>
+   <div class="card"><h3>Distribución por segmento</h3><div class="stack" id="stack"></div><div class="legend" id="legend"></div></div>
+  </div>
+  <div class="card"><h3>Dónde está el valor de los clientes</h3><p class="note">Qué parte de los clientes y qué parte del gasto total aporta cada segmento.</p><div id="value"></div></div>
+  <div class="segs" id="homeSegs"></div>
+  <div class="card"><h3>Guía rápida: un ejemplo de uso</h3><p class="note">Así lo usaría una persona de marketing para preparar una campaña de reactivación.</p>
+   <div class="steps">
+    <div><b>1. Revisa el resumen</b><p class="note">Mira cómo se reparten los segmentos y cuánto gasto aporta cada uno.</p></div>
+    <div><b>2. Abre el segmento Inactivos</b><p class="note">Lee su perfil y la acción sugerida.</p><button class="btn sec" data-g="2">Ver perfil</button></div>
+    <div><b>3. Consulta sus clientes</b><p class="note">Filtra por ese segmento y revisa la ficha de algunos clientes.</p><button class="btn sec" data-g="3">Ver clientes</button></div>
+    <div><b>4. Exporta las asignaciones</b><p class="note">Genera el CSV para que el equipo comercial planee la campaña.</p><button class="btn sec" data-g="4">Ir a exportación</button></div>
+   </div></div>
+ </section>
+
+ <section id="s1" class="screen hide">
+  <p class="lead">Revisa que el CSV traiga lo necesario.</p>
+  <div class="card"><div class="row"><div><h3>E-commerce_Customer_Segmentation_2026.csv</h3><p class="note" style="margin:0">50,000 registros · 53 columnas</p></div><span class="badge">Archivo válido</span></div>
+   <div class="row l" style="margin-top:14px"><label class="filebtn">Revisar otro archivo (.csv)<input type="file" id="chk" accept=".csv,text/csv"></label><button class="btn sec" data-a="tpl">Ver plantilla</button></div>
+   <div id="loadmsg"></div></div>
+  <div class="card scroll req"><h3>Columnas que necesita cada sección</h3><p class="note">Los nombres deben ser idénticos. Si faltan, solo esa sección queda sin datos.</p>
+   <table><thead><tr><th>Sección</th><th>Columnas obligatorias</th><th>Valores esperados</th></tr></thead><tbody id="reqt"></tbody></table></div>
+ </section>
+
+ <section id="s2" class="screen hide">
+  <p class="lead">Estado de los datos antes de agrupar y reglas de limpieza aplicadas.</p>
+  <div class="kpis">
+   <div class="card kpi"><span>Registros</span><b>50,000</b></div><div class="card kpi"><span>Columnas</span><b>53</b></div>
+   <div class="card kpi"><span>Duplicados</span><b>0</b></div><div class="card kpi"><span>Variables para agrupar</span><b>8</b></div></div>
+  <div class="card scroll"><h3>Valores faltantes y cómo se tratan</h3>
+   <table><thead><tr><th>Columna</th><th>Faltantes</th><th>%</th><th>Tratamiento</th></tr></thead><tbody>
+   <tr><td>Categoría preferida 2</td><td>16,743</td><td>33.49%</td><td>Se marca como “Sin segunda categoría”</td></tr>
+   <tr><td>Categoría preferida 3</td><td>33,257</td><td>66.51%</td><td>Se marca como “Sin tercera categoría”</td></tr>
+   <tr><td>Redes sociales</td><td>12,420</td><td>24.84%</td><td>No se usa para agrupar</td></tr>
+   <tr><td>Nivel de lealtad</td><td>1,272</td><td>2.54%</td><td>No se usa para agrupar (columna derivada)</td></tr></tbody></table></div>
+  <div class="card scroll"><h3>Cómo se usan las 53 columnas</h3>
+   <table><thead><tr><th>Grupo</th><th>Columnas</th><th>Uso en el proyecto</th></tr></thead><tbody>
+   <tr><td>Identificador</td><td>1</td><td>Une cada cliente con su segmento en la exportación</td></tr>
+   <tr><td>Entrada al agrupamiento</td><td>8</td><td>Antigüedad, compras, valor del pedido, días sin comprar, devoluciones, quejas, satisfacción y edad</td></tr>
+   <tr><td>Descriptivas</td><td>18</td><td>País, ingreso, género, categorías, canal, pago y otras. Describen a los segmentos, no los forman</td></tr>
+   <tr><td>Etiquetas y derivadas</td><td>26</td><td>Gasto total, riesgo, RFM, actividad, lealtad y otras. No entran al modelo; sirven para comparar y medir valor</td></tr></tbody></table>
+   <p class="note">El detalle de cada columna está en “Diccionario de datos”.</p></div>
+  <div class="row"><span class="note" id="cleanst">Las reglas de limpieza quedan registradas para repetir el análisis.</span><button class="btn" data-a="clean">Aplicar limpieza</button></div>
+ </section>
+
+ <section id="s3" class="screen hide">
+  <p class="lead">Consulta qué significa cada columna del archivo y cómo se usa.</p>
+  <div class="card"><div class="fil"><input type="search" id="dq" placeholder="Buscar columna" aria-label="Buscar columna"><select id="dg" aria-label="Grupo"><option value="">Todos los grupos</option><option value="I">Identificador</option><option value="E">Entrada al agrupamiento</option><option value="D">Descriptivas</option><option value="L">Etiquetas y derivadas</option></select></div>
+   <p class="note" id="dcount"></p>
+   <div class="scroll"><table class="rt"><thead><tr><th>Nombre en español</th><th>Nombre en el archivo</th><th>Uso</th></tr></thead><tbody id="dict"></tbody></table></div></div>
+ </section>
+
+ <section id="s4" class="screen hide">
+  <p class="lead">Elige la configuración con la que se asignan los segmentos y ejecútala.</p>
+  <div class="card scroll"><h3>Configuraciones evaluadas</h3>
+   <p class="note">Se evalúan tres configuraciones para comparar su <abbr title="Qué tan distintos son los grupos entre sí">separación</abbr>, su <abbr title="Qué tanto se repiten los mismos grupos al volver a ejecutar">estabilidad</abbr> y el tamaño de su grupo más pequeño.</p>
+   <table><thead><tr><th></th><th>Segmentos</th><th>Separación</th><th>Estabilidad</th><th>Grupo más pequeño</th></tr></thead><tbody id="cfg"></tbody></table>
+   <p class="note" id="cfgnote"></p></div>
+  <div class="card"><div class="row"><div><h3>Ejecutar agrupamiento</h3><p class="note" style="margin:0">Tiempo máximo: 5 minutos. Cada ejecución queda en el registro.</p></div><button class="btn" data-a="run" id="runbtn">Ejecutar agrupamiento</button></div>
+   <div class="prog hide" id="prog"><i id="progi"></i></div><div id="runmsg"></div></div>
+  <div class="card scroll"><h3>Registro de ejecuciones</h3><table class="rt"><thead><tr><th>Fecha</th><th>Método</th><th>Segmentos</th><th>Variables</th><th>Semilla</th><th>Clientes</th></tr></thead><tbody id="reg"></tbody></table></div>
+ </section>
+
+ <section id="s5" class="screen hide">
+  <p class="lead">Toca un segmento para resaltarlo en las gráficas y en las descripciones.</p>
+  <div class="segs" id="segs"></div>
+  <div class="card"><div class="row"><h3>Comparar segmentos por variable</h3><div class="fil" style="margin:0">
+   <select id="var" aria-label="Variable"><option value="2">Valor promedio del pedido (USD)</option><option value="3">Días desde la última compra</option><option value="1">Antigüedad (meses)</option><option value="0">Compras acumuladas</option><option value="4">Gasto total promedio (USD, referencia)</option></select>
+   <select id="mode" aria-label="Modo"><option value="val">Valores</option><option value="dif">Diferencia contra el promedio</option></select></div></div>
+   <div id="bars"></div><p class="note" id="vnote"></p></div>
+  <div class="card"><h3>Clientes según días sin comprar y valor del pedido</h3><p class="note">Muestra de 160 clientes: estas dos variables son las que más separan a los segmentos.</p><svg id="sc" viewBox="0 0 560 300" role="img" aria-label="Dispersión de clientes por segmento"></svg><div class="legend" id="sclg"></div></div>
+  <div class="card"><h3>Qué los distingue y qué hacer con cada uno</h3><div id="desc"></div><p class="note">Las acciones son propuestas para que las revise marketing. El sistema no envía promociones.</p></div>
+  <div class="card"><h3>Nombres de los segmentos</h3><p class="note">Los nombres son provisionales. Al cambiarlos se actualizan en todo el dashboard.</p><div class="fil" id="ren"></div></div>
+ </section>
+
+ <section id="s6" class="screen hide">
+  <p class="lead">Compara dos segmentos y revisa las variables que describen a los clientes.</p>
+  <div class="card"><div class="fil"><select id="ca" aria-label="Primer segmento"></select><select id="cb" aria-label="Segundo segmento"></select></div>
+   <div class="scroll"><table id="cmp"></table></div></div>
+  <div class="card"><div class="row"><h3>Perfil complementario</h3><select id="cvar" aria-label="Variable descriptiva"></select></div>
+   <p class="note">Porcentaje de clientes de cada segmento en cada opción. El color solo identifica el segmento.</p><div class="scroll"><table id="cx"></table></div>
+   <p class="note">Estas variables describen a los clientes, pero los cuatro segmentos se parecen mucho en ellas. Es esperable en un dataset sintético.</p></div>
+ </section>
+
+ <section id="s7" class="screen hide">
+  <p class="lead">Mismos 50,000 clientes, dos formas de clasificarlos.</p>
+  <div class="card"><div class="row"><h3>Segmentos generados contra otra clasificación</h3>
+   <label class="note">Comparar con <select id="base"><option value="rules">Reglas del proyecto</option><option value="act">Estado de actividad original</option><option value="rfm">Categoría RFM original</option><option value="loy">Nivel de lealtad original</option></select></label></div>
+   <p class="note" id="xnote"></p><div class="scroll"><table id="xt"></table></div>
+   <p class="note">Cada celda muestra cuántos clientes del segmento caen en esa categoría; el tono indica el porcentaje de la fila.</p></div>
+  <div class="two"><div class="card"><h3>Qué aporta el modelo</h3><p class="note">Separa a los clientes por valor del pedido y antigüedad, algo que las reglas no distinguen. El segmento “Inactivos” coincide por completo con la regla Inactivo.</p></div>
+   <div class="card"><h3>Limitaciones</h3><p class="note">La separación entre grupos es baja y varios segmentos se parecen en recencia y compras. Los datos son sintéticos.</p></div></div>
+ </section>
+
+ <section id="s8" class="screen hide">
+  <p class="lead">Busca clientes, filtra por segmento y abre la ficha de cada uno.</p>
+  <div class="card"><div class="fil">
+   <input type="search" id="q" placeholder="Buscar por ID (ej. 017861)" aria-label="Buscar por ID">
+   <select id="fseg" aria-label="Segmento"></select><select id="fcty" aria-label="País"></select><select id="fcat" aria-label="Categoría favorita"></select><select id="fage" aria-label="Rango de edad"></select>
+   <button class="btn sec" data-a="clr">Limpiar filtros</button></div>
+   <p class="note" id="fcount"></p>
+   <div class="scroll"><table class="rt"><thead><tr><th>Cliente</th><th>Segmento generado</th><th>País</th><th>Categoría favorita</th><th><button data-sort="5">Compras</button></th><th><button data-sort="6">Valor del pedido</button></th><th><button data-sort="7">Días sin comprar</button></th></tr></thead><tbody id="rows"></tbody></table></div>
+   <div class="row" style="margin-top:8px"><span class="note" id="pginfo"></span><span class="row"><button class="btn sec" data-pg="-1">Anterior</button><button class="btn sec" data-pg="1">Siguiente</button></span></div>
+   <p class="note">Búsqueda y filtros sobre una muestra de 40 clientes de ejemplo. El sistema final los aplica a los 50,000.</p></div>
+  <div class="card hide" id="ficha"></div>
+ </section>
+
+ <section id="s9" class="screen hide">
+  <p class="lead">Genera los archivos con los resultados. Siempre coinciden con lo que ves en pantalla.</p>
+  <div class="two">
+   <div class="card"><h3>Asignaciones de clientes (CSV)</h3><p class="note">Vista previa de las primeras filas:</p><pre id="csvp"></pre><button class="btn act" data-x="csv">Exportar asignaciones (CSV)</button></div>
+   <div class="card"><h3>Reporte de perfiles (HTML)</h3><p class="note">Secciones que incluirá:</p>
+    <ol class="note" style="margin:6px 0 12px;padding-left:18px"><li>Resumen de los datos (50,000 registros, 53 columnas)</li><li>Configuración usada (K-Means, 4 segmentos, 8 variables, semilla 42)</li><li>Perfil de cada segmento: tamaño, porcentaje y variables</li><li>Comparación con la clasificación por reglas</li><li>Limitaciones (datos sintéticos, separación baja)</li></ol><button class="btn act" data-x="html">Exportar reporte (HTML)</button></div></div>
+  <div class="card hide" id="conf"></div>
+  <div class="card scroll"><h3>Historial de exportaciones</h3><div id="hist"></div></div>
+ </section>
+
+ <section id="s10" class="screen hide">
+  <p class="lead">Información del proyecto y de quienes lo desarrollan.</p>
+  <div class="card"><h3>E-Commerce AI: inteligencia artificial para la gestión y personalización de clientes</h3>
+   <p class="note" style="margin:4px 0 0">Asignatura: Formulación de proyectos de tecnología · Docente: Lic. José Luis Herrera Sánchez · Grupo: LITIID73 · UT Cancún</p></div>
+  <div class="card scroll"><h3>Integrantes</h3><table class="rt"><thead><tr><th>Nombre</th><th>Rol</th><th>Responsable de</th></tr></thead><tbody>
+   <tr><td data-l="Nombre">Zavaleta Moctezuma Gretel Dairen</td><td data-l="Rol">Gerente del proyecto</td><td data-l="Responsable de">Coordinación, cronograma, control de cambios y cierre</td></tr>
+   <tr><td data-l="Nombre">Fregoso Arechiga María Tita</td><td data-l="Rol">Analista de requisitos y negocio</td><td data-l="Responsable de">Requisitos, diagnóstico de datos y caracterización de segmentos</td></tr>
+   <tr><td data-l="Nombre">Pech Pool Henrry Misael</td><td data-l="Rol">Desarrollador e integrador</td><td data-l="Responsable de">Preparación de variables, dashboard, consulta, filtrado y exportación</td></tr>
+   <tr><td data-l="Nombre">Recaman Lara Jesús Alexander</td><td data-l="Rol">Especialista en IA y pruebas</td><td data-l="Responsable de">Agrupamiento, comparación con reglas y pruebas</td></tr></tbody></table></div>
+  <div class="two"><div class="card"><h3>Privacidad de los datos</h3><p class="note">El dataset es sintético y no contiene personas reales. Solo se muestra el identificador del cliente y el archivo original no se modifica.</p></div>
+   <div class="card"><h3>Qué no incluye este sistema</h3><p class="note">No predice abandono futuro, no envía promociones ni modifica precios, y no incluye tienda en línea, pagos ni inventarios.</p></div></div>
+ </section>
+ </div>
+</div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+function $(i){return document.getElementById(i)}
+function fm(n){return n.toLocaleString("en-US")}
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function toast(t){var x=$("toast");x.textContent=t;x.classList.add("show");clearTimeout(x._t);x._t=setTimeout(function(){x.classList.remove("show")},2400)}
+var SEG=[
+{l:"A",n:"Ticket bajo, activos",c:"var(--s0)",size:13576,pct:27.2,v:[97.4,40.2,229,29.1,22094],sp:11.9,d:"Pedidos pequeños (unos $229) y compra reciente.",a:"Subir el valor del pedido con paquetes o complementos."},
+{l:"B",n:"Inactivos",c:"var(--s1)",size:7166,pct:14.3,v:[98.4,61.0,500,267,49203],sp:14.0,d:"Llevan cerca de 9 meses sin comprar, con pedidos medianos.",a:"Reactivarlos con una oferta de regreso y revisar por qué dejaron de comprar."},
+{l:"C",n:"Ticket alto, recientes",c:"var(--s2)",size:13201,pct:26.4,v:[101.2,35.2,763,29.1,76987],sp:40.4,d:"Los pedidos más caros (unos $763) y clientes relativamente nuevos.",a:"Retenerlos con atención prioritaria y beneficios; aportan el 40% del gasto."},
+{l:"D",n:"Clientes antiguos activos",c:"var(--s3)",size:16057,pct:32.1,v:[100.1,95.9,530,28.4,52593],sp:33.6,d:"Casi 8 años de antigüedad, pedidos medianos y compra reciente.",a:"Reconocer su lealtad con beneficios por antigüedad y pedirles recomendaciones."}];
+var AVG=[99.4,59.7,505.4,63.0,50267],VN=["Compras acumuladas","Antigüedad (meses)","Valor promedio del pedido (USD)","Días desde la última compra","Gasto total promedio (USD)"];
+var CFG=[[3,0.108,0.229,15.1],[4,0.096,0.147,14.3],[5,0.099,0.320,13.7]];
+var RULES=["Activo frecuente","Activo ocasional","En enfriamiento","Inactivo"];
+var BASES={rules:{c:RULES,m:[[4508,4887,3184,997],[0,0,0,7166],[4686,4529,3039,947],[5685,5544,3754,1074]],n:"Reglas: Activo frecuente (30 días o menos desde la última compra y 100 compras o más), Activo ocasional (30 días o menos, menos de 100 compras), En enfriamiento (31 a 90 días) e Inactivo (más de 90 días)."},
+act:{c:["Activo","En riesgo","Dormido","Inactivo"],m:[[9270,1713,1534,1059],[0,0,0,7166],[9068,1607,1534,992],[11074,1917,1926,1140]],n:"Etiqueta original del dataset, usada solo para comparar. El segmento Inactivos coincide al 100% con “Inactivo”; los otros tres tienen una mezcla parecida, con cerca de 69% de clientes activos."},
+rfm:{c:["Campeones","Leales","Leales potenciales","Necesitan atención","En riesgo"],m:[[5084,3994,2613,151,1734],[0,2403,2132,758,1873],[8759,2588,1142,63,649],[9128,3789,1827,106,1207]],n:"Etiqueta RFM original, usada solo para comparar. Ticket alto, recientes concentra más Campeones (66%) y Inactivos no tiene ninguno."},
+loy:{c:["Diamante","Platino","Oro","Plata","Bronce","Sin nivel"],m:[[1560,3155,3889,2006,2296,670],[2851,1576,1360,587,607,185],[8823,2137,1343,451,325,122],[7066,3667,2854,1144,1031,295]],n:"Nivel de lealtad original, usado solo para comparar. Ticket alto, recientes tiene cerca de 67% en Diamante; Ticket bajo, activos solo alrededor de 11%."}};
+var CX={age:{t:"Rango de edad",c:["18-24","25-34","35-44","45-54","55-64","65+"],m:[[16.1,16.7,15.7,16.9,16.9,17.6],[16.0,17.4,16.9,16.9,16.2,16.7],[17.2,16.8,16.7,16.7,16.6,16.1],[17.0,16.3,16.6,16.8,16.3,17.0]]},
+inc:{t:"Rango de ingreso",c:["0-25K","25K-50K","50K-75K","75K-100K","100K-150K","150K+"],m:[[16.6,16.0,16.4,16.5,17.4,17.0],[17.0,16.0,17.6,16.5,16.7,16.0],[16.8,16.9,17.0,16.1,16.6,16.7],[17.1,16.6,16.4,16.6,16.6,16.9]]},
+cat:{t:"Categoría favorita",c:["Automotriz","Belleza","Libros","Electrónica","Moda","Despensa","Salud y cuidado personal","Hogar y cocina","Oficina","Mascotas","Deporte y fitness","Juguetes"],m:[[8.6,8.0,8.4,8.2,8.2,8.5,8.1,8.4,8.3,8.5,8.7,8.1],[8.8,8.3,8.3,8.0,8.1,8.5,8.5,8.0,8.4,8.3,8.3,8.4],[8.2,8.2,8.2,8.5,8.3,8.7,8.4,8.4,8.1,8.3,8.4,8.3],[8.4,8.2,8.4,8.3,8.9,8.6,8.1,8.6,8.3,7.9,8.2,8.2]]},
+ch:{t:"Canal de compra",c:["En tienda","Marketplace","App móvil","En línea"],m:[[25.1,24.8,25.3,24.9],[25.5,25.2,24.5,24.8],[25.5,24.5,25.0,25.1],[24.6,24.5,25.3,25.7]]},
+dev:{t:"Dispositivo",c:["Escritorio","Móvil","Varios","Tableta"],m:[[25.2,24.9,24.9,25.1],[25.7,24.7,24.5,25.1],[25.5,24.8,25.2,24.4],[25.6,24.7,24.9,24.7]]},
+pay:{t:"Método de pago",c:["Transferencia","Contra entrega","Tarjeta de crédito","Tarjeta de débito","Billetera digital"],m:[[20.3,20.0,19.8,20.2,19.6],[20.3,21.1,20.6,19.5,18.4],[20.4,19.8,20.0,20.2,19.7],[19.6,19.8,20.1,20.4,20.0]]},
+ctry:{t:"País (los 5 con más clientes)",c:["Estados Unidos","Pakistán","Singapur","Italia","México"],m:[[6.1,6.1,5.8,5.9,5.8],[6.1,5.7,6.0,5.9,6.1],[5.9,6.1,5.9,6.0,6.2],[6.0,6.0,6.3,6.0,5.9]]}};
+var CATS=CX.cat.c,AGES=CX.age.c,ACT={A:"Activo",R:"En riesgo",D:"Dormido",I:"Inactivo"},RFMN=BASES.rfm.c,LOYN=BASES.loy.c,CM={Spain:"España","United Arab Emirates":"Emiratos Árabes Unidos"};
+function ct(c){return CM[c]||c}
+var ROWS=[["017861",0,"Países Bajos",5,5,129,247,85,4,75,4,7,"D",1,1],["015272",0,"United Arab Emirates",9,2,37,324,86,4,60,8,14,"D",2,2],["020259",0,"Alemania",6,5,138,182,53,5,5,8,5,"R",0,1],["011964",0,"Australia",1,1,51,239,12,4,23,18,12,"A",1,2],["041599",0,"Spain",11,4,76,15,1,2,21,14,2,"A",2,4],["043536",0,"Canadá",6,2,69,389,1,3,36,13,11,"A",0,1],["024716",0,"Singapur",8,3,149,391,1,3,27,7,12,"A",0,0],["024962",0,"Pakistán",7,1,58,166,25,4,14,1,3,"A",1,3],["009896",0,"India",7,4,39,485,25,2,31,7,6,"A",1,2],["008059",0,"Brasil",1,4,9,123,0,3,90,11,10,"A",4,4],
+["039891",1,"Brasil",3,2,33,17,312,5,38,9,6,"I",3,5],["000276",1,"Brasil",0,0,189,748,212,4,2,6,2,"I",1,0],["026671",1,"United Arab Emirates",11,0,7,721,159,4,88,7,13,"I",4,3],["016843",1,"Spain",7,1,163,88,324,4,77,5,9,"I",2,2],["011241",1,"México",6,3,146,384,187,5,1,13,9,"I",1,0],["016436",1,"United Arab Emirates",0,5,50,765,342,3,80,11,13,"I",2,1],["033223",1,"Spain",5,1,69,320,184,4,86,4,9,"I",4,2],["031426",1,"Brasil",9,2,15,186,234,1,18,14,12,"I",3,4],["019191",1,"Italia",0,2,167,34,240,1,97,5,7,"I",4,3],["047615",1,"Arabia Saudita",6,3,168,171,308,3,27,8,11,"I",2,1],
+["034301",2,"Spain",4,2,78,787,0,5,13,17,10,"A",0,0],["002688",2,"Arabia Saudita",9,1,21,711,43,2,16,4,8,"R",2,2],["019786",2,"Canadá",3,3,140,769,82,2,29,19,11,"D",0,0],["031576",2,"Pakistán",1,4,82,759,31,3,20,9,11,"R",0,0],["038754",2,"Australia",0,4,38,929,19,5,33,19,4,"A",1,1],["046071",2,"India",8,4,32,894,3,2,50,15,9,"A",1,1],["042021",2,"Arabia Saudita",2,3,11,561,6,5,17,8,13,"A",2,3],["020610",2,"Spain",5,4,10,662,24,3,47,5,7,"A",2,3],["025478",2,"Japón",6,0,177,834,6,5,37,0,8,"A",0,0],["046193",2,"Arabia Saudita",3,5,197,667,46,5,6,5,11,"R",0,0],
+["048491",3,"Países Bajos",5,5,139,483,61,4,119,4,9,"D",0,0],["019005",3,"Canadá",11,4,126,28,3,2,114,1,12,"A",1,4],["020252",3,"Singapur",2,5,147,978,0,3,101,12,2,"A",0,0],["038055",3,"India",11,2,45,674,0,2,94,5,8,"A",1,1],["026547",3,"México",0,1,121,299,1,1,76,18,3,"A",0,1],["024595",3,"Estados Unidos",8,0,97,577,0,1,100,9,2,"A",0,0],["033276",3,"Francia",9,5,97,89,1,3,92,12,1,"A",1,3],["036832",3,"Italia",10,4,62,875,1,5,96,1,13,"A",0,0],["035134",3,"Arabia Saudita",3,5,43,328,6,1,78,15,8,"A",1,2],["030483",3,"Italia",1,3,14,527,3,1,96,14,1,"A",2,3]];
+var PTS=[[0,338,0],[135,87,0],[159,124,0],[348,270,1],[35,171,0],[60,317,0],[14,417,0],[2,217,3],[214,142,1],[69,538,3],[80,669,3],[141,427,3],[86,474,3],[186,353,1],[75,26,3],[19,505,3],[0,719,3],[205,13,0],[41,927,2],[118,868,3],[74,853,2],[7,177,0],[2,287,0],[74,716,3],[20,237,0],[297,11,1],[169,996,2],[0,929,3],[90,906,2],[5,772,2],[41,916,2],[2,198,3],[6,541,2],[0,797,3],[200,893,2],[2,812,3],[1,99,0],[4,32,0],[0,325,0],[29,825,2],[97,751,2],[7,742,2],[312,343,1],[0,641,3],[0,487,2],[148,930,2],[262,291,1],[9,811,2],[1,923,2],[40,269,0],[90,202,0],[2,374,3],[70,878,3],[115,710,2],[7,531,2],[312,378,1],[0,833,2],[203,113,1],[290,159,1],[351,719,1],[6,230,3],[26,129,0],[23,229,0],[51,79,0],[8,375,3],[64,324,0],[66,603,3],[89,486,0],[0,804,3],[1,203,0],[3,228,0],[49,339,3],[6,970,3],[1,27,0],[4,212,0],[20,27,0],[1,258,3],[0,681,2],[27,739,2],[67,308,0],[105,374,0],[84,756,2],[156,338,1],[1,316,0],[253,551,1],[68,358,3],[23,940,3],[230,617,1],[12,563,3],[5,723,2],[230,851,1],[15,428,0],[1,843,3],[237,624,1],[2,432,3],[1,800,3],[1,115,3],[0,537,2],[89,739,2],[1,559,3],[24,369,0],[169,598,3],[14,620,2],[259,157,1],[1,457,0],[81,782,3],[45,821,2],[0,441,3],[0,863,2],[17,925,2],[2,711,3],[0,484,0],[247,663,1],[1,338,0],[74,413,3],[5,395,3],[334,340,1],[21,835,2],[5,731,2],[5,305,3],[1,950,2],[19,173,0],[62,105,0],[1,689,3],[1,282,0],[1,356,0],[298,583,1],[136,119,0],[0,126,0],[27,790,3],[33,216,0],[3,945,2],[15,237,0],[5,52,0],[164,216,0],[1,898,2],[0,392,3],[0,887,2],[24,132,0],[186,964,2],[50,754,2],[126,600,2],[253,567,1],[0,570,3],[169,298,1],[24,466,3],[6,488,3],[6,22,0],[320,840,1],[1,164,0],[131,944,2],[3,318,0],[229,898,1],[0,771,2],[13,883,3],[23,235,0],[5,194,0],[74,615,3],[14,558,2],[154,706,3]];
+var DICT=("customer_id|ID del cliente|I;age|Edad|E;tenure_months|Antigüedad (meses)|E;total_purchases|Compras acumuladas|E;avg_order_value_usd|Valor promedio del pedido (USD)|E;days_since_last_purchase|Días desde la última compra|E;return_count|Devoluciones|E;complaint_count|Quejas|E;satisfaction_score|Satisfacción (1 a 5)|E;"+
+"gender|Género|D;country|País|D;city|Ciudad|D;income_bracket|Rango de ingreso|D;education_level|Nivel de estudios|D;employment_type|Tipo de empleo|D;marital_status|Estado civil|D;purchase_frequency|Frecuencia de compra declarada|D;preferred_category_1|Categoría preferida 1|D;preferred_category_2|Categoría preferida 2|D;preferred_category_3|Categoría preferida 3|D;shopping_channel|Canal de compra|D;device_used|Dispositivo usado|D;payment_method|Método de pago|D;email_open_rate|Apertura de correos|D;click_through_rate|Clics en correos|D;conversion_rate|Conversión|D;social_media_presence|Redes sociales|D;"+
+"customer_segment|Tipo de cliente|L;segment_category|Categoría de valor y actividad|L;age_group|Rango de edad|L;total_spent_usd|Gasto total (USD)|L;satisfaction_level|Nivel de satisfacción|L;loyalty_tier|Nivel de lealtad|L;customer_lifetime_value_usd|Valor del cliente en el tiempo (USD)|L;customer_acquisition_cost_usd|Costo de adquisición (USD)|L;customer_profitability_usd|Rentabilidad del cliente (USD)|L;recency_score|Puntuación de recencia|L;frequency_score|Puntuación de frecuencia|L;monetary_score|Puntuación monetaria|L;rfm_score|Puntuación RFM|L;churn_risk_score|Puntuación de riesgo de abandono|L;customer_health_score|Puntuación de salud del cliente|L;dataset_year|Año del dataset|L;customer_value_category|Categoría de valor|L;activity_status|Estado de actividad|L;health_status|Estado de salud|L;churn_risk_category|Categoría de riesgo|L;rfm_category|Categoría RFM|L;profitability_category|Categoría de rentabilidad|L;engagement_level|Nivel de interacción|L;behavior_segment|Segmento de comportamiento|L;device_preference|Preferencia de dispositivo|L;clv_category|Categoría de valor del cliente|L").split(";").map(function(x){return x.split("|")});
+var UG={I:"Une cliente y segmento",E:"Entra al agrupamiento",D:"Describe segmentos",L:"Solo para comparar"};
+var HELP={s0:["Tocar un segmento → abre su perfil","Botones de la guía rápida → te llevan al paso indicado","Botón Glosario → explica los términos técnicos"],s1:["Cargar otro archivo → valida columnas y muestra el resultado","Probar con un archivo incorrecto → muestra el error que verías"],s2:["Aplicar limpieza → registra las reglas de preparación"],s3:["Buscar → filtra las columnas por nombre","Grupo → muestra solo las columnas de ese uso"],s4:["Elegir configuración → cambia el método con que se asignan los segmentos","Ejecutar → asigna segmentos y agrega una fila al registro"],s5:["Selector de variable y de modo → cambian la gráfica de barras","Tocar una tarjeta → resalta ese segmento","Nombres → renombran los segmentos en todo el dashboard"],s6:["Elegir dos segmentos → muestra sus diferencias","Selector del perfil complementario → cambia la tabla"],s7:["Selector de comparación → cambia la clasificación contra la que se cruza"],s8:["Búsqueda y filtros → reducen la lista de clientes","Encabezados Compras, Valor y Días → ordenan","Tocar un cliente → abre su ficha"],s9:["Exportar → muestra qué archivo se generará y pide confirmar","Confirmar → agrega el archivo al historial"]};
+var TT={c0:"Resumen",c1:"Recomendaciones de la IA",c2:"Perfiles oficiales",c3:"Clientes en riesgo",c4:"Suscripciones",c5:"Marketing y redes sociales",c6:"Dispositivos y pagos",c7:"Satisfacción",s0:"Resumen de segmentos de IA",s1:"Cargar archivo",s2:"Calidad y preparación",s3:"Diccionario de datos",s4:"Agrupamiento",s5:"Perfiles de segmentos",s6:"Comparar segmentos",s7:"Comparación con reglas",s8:"Consulta de clientes",s9:"Exportación",s10:"Datos del equipo"};
+var pickCfg=1,hl=-1,sortK=0,sortD=1,pg=0,PS=8,REG=[["21 oct 2026","K-Means",4,"8","42","50,000"]],HIST=[],pend=null,cur=[];
+function tag(i){return'<span class="lt" style="background:'+SEG[i].c+'">'+SEG[i].l+'</span>'+esc(SEG[i].n)}
+function go(id){document.querySelectorAll(".screen").forEach(function(s){s.classList.toggle("hide",s.id!==id)});document.querySelectorAll("#nav button").forEach(function(b){b.classList.toggle("on",b.dataset.s===id)});$("title").textContent=TT[id];window.scrollTo(0,0)}
+function rHome(){$("stack").innerHTML=SEG.map(function(s){return'<i style="width:'+s.pct+'%;background:'+s.c+'" title="'+esc(s.n)+'"></i>'}).join("");
+$("legend").innerHTML=SEG.map(function(s,i){return'<span>'+tag(i)+' '+s.pct+'%</span>'}).join("");
+$("value").innerHTML=SEG.map(function(s,i){return'<div class="pair"><b>'+tag(i)+'</b><div><div class="b2"><span>Clientes</span><div class="bar" style="--c:'+s.c+';width:'+s.pct*2+'%"></div>'+s.pct+'%</div><div class="b2"><span>Gasto total</span><div class="bar" style="--c:'+s.c+';opacity:.55;width:'+s.sp*2+'%"></div>'+s.sp+'%</div></div></div>'}).join("");
+$("homeSegs").innerHTML=SEG.map(function(s,i){return'<button class="seg" style="--c:'+s.c+'" data-seg="'+i+'" data-go="s5"><b>'+fm(s.size)+'</b><span>'+tag(i)+'</span><br><span class="note">'+s.d+'</span></button>'}).join("")}
+function rCfg(){$("cfg").innerHTML=CFG.map(function(c,i){var sp=c[1]<.25?'<span class="badge w">Baja</span>':'<span class="badge">Buena</span>',es=c[2]<.25?'<span class="badge w">Baja</span>':c[2]<.5?'<span class="badge o">Media</span>':'<span class="badge">Alta</span>';
+return'<tr><td><input type="radio" name="cfg" data-cfg="'+i+'" aria-label="Elegir '+c[0]+' segmentos"'+(i===pickCfg?" checked":"")+'></td><td>'+c[0]+' (K-Means)</td><td>'+c[1].toFixed(3)+' '+sp+'</td><td>'+c[2].toFixed(2)+' '+es+'</td><td>'+c[3]+'% de los clientes</td></tr>'}).join("");
+$("cfgnote").textContent="Ninguna configuración separa bien los grupos, y con 4 segmentos la estabilidad es la más baja. La decisión final se toma en la semana 8 con un criterio escrito (interpretación, estabilidad y tamaño). Los perfiles de este prototipo usan 4 segmentos como ejemplo.";
+$("reg").innerHTML=REG.slice().reverse().map(function(r){return'<tr>'+r.map(function(v,j){return'<td data-l="'+["Fecha","Método","Segmentos","Variables","Semilla","Clientes"][j]+'">'+v+'</td>'}).join("")+'</tr>'}).join("")}
+function rDict(){var q=$("dq").value.toLowerCase(),g=$("dg").value,l=DICT.filter(function(r){return(!g||r[2]===g)&&(r[0]+r[1]).toLowerCase().indexOf(q)>-1});
+$("dcount").textContent=l.length+" de 53 columnas";$("dict").innerHTML=l.length?l.map(function(r){return'<tr><td data-l="Español">'+r[1]+'</td><td data-l="Archivo"><code>'+r[0]+'</code></td><td data-l="Uso">'+UG[r[2]]+'</td></tr>'}).join(""):'<tr><td colspan="3" class="note">No hay columnas con ese nombre. Prueba con otra palabra o cambia el grupo.</td></tr>'}
+function rSegs(){$("segs").innerHTML=SEG.map(function(s,i){return'<button class="seg'+(hl===i?" on":"")+'" style="--c:'+s.c+'" data-seg="'+i+'"><b>'+fm(s.size)+'</b><span>'+tag(i)+'</span><br><span class="note">'+s.pct+'% de los clientes</span></button>'}).join("");
+var k=+$("var").value,dif=$("mode").value==="dif",vals=SEG.map(function(s){return dif?Math.round((s.v[k]/AVG[k]-1)*100):s.v[k]}),mx=Math.max.apply(null,vals.map(Math.abs))||1;
+$("bars").innerHTML=SEG.map(function(s,i){var v=vals[i];return'<div class="brow" style="'+(hl>-1&&hl!==i?"opacity:.4":"")+'"><span>'+tag(i)+'</span><div><div class="bar" style="--c:'+s.c+';width:'+Math.abs(v)/mx*100+'%"></div></div><b>'+(dif?(v>=0?"+":"−")+Math.abs(v)+"%":fm(v))+'</b></div>'}).join("");
+$("vnote").textContent=dif?"Contra el promedio de los 50,000 clientes ("+fm(AVG[k])+").":k===3?"Un valor alto significa que el cliente lleva más tiempo sin comprar.":k===4?"El gasto total sale de compras por valor del pedido; es solo referencia y no entra al agrupamiento.":"Promedio por segmento.";
+$("desc").innerHTML=SEG.map(function(s,i){return'<div style="margin:10px 0;'+(hl>-1&&hl!==i?"opacity:.4":"")+'"><b>'+tag(i)+'</b><br>'+s.d+'<br><span class="badge o">Acción sugerida</span> '+s.a+'</div>'}).join("");
+var o='';[0,250,500,750,1000].forEach(function(y){var py=260-y*.25;o+='<line x1="50" x2="545" y1="'+py+'" y2="'+py+'" stroke="var(--line)"/><text x="46" y="'+(py+4)+'" font-size="11" fill="var(--muted)" text-anchor="end">$'+y+'</text>'});
+[0,100,200,300].forEach(function(x){var px=50+x*1.35;o+='<text x="'+px+'" y="278" font-size="11" fill="var(--muted)" text-anchor="middle">'+x+'</text>'});
+o+='<text x="300" y="296" font-size="11" fill="var(--muted)" text-anchor="middle">Días desde la última compra</text>';
+PTS.forEach(function(p){o+='<circle cx="'+(50+Math.min(p[0],365)*1.35)+'" cy="'+(260-p[1]*.25)+'" r="4" fill="'+SEG[p[2]].c+'" opacity="'+(hl>-1&&hl!==p[2]?.12:.8)+'"/>'});
+$("sc").innerHTML=o;$("sclg").innerHTML=SEG.map(function(s,i){return'<span>'+tag(i)+'</span>'}).join("")}
+function rCmp(){var a=+$("ca").value,b=+$("cb").value,A=SEG[a],B=SEG[b];
+var rows=[["Clientes",A.size,B.size]].concat(VN.map(function(n,k){return[n,A.v[k],B.v[k]]}));
+$("cmp").innerHTML='<thead><tr><th>Variable</th><th class="hc" style="--c:'+SEG[a].c+'">'+tag(a)+'</th><th class="hc" style="--c:'+SEG[b].c+'">'+tag(b)+'</th><th class="hc" style="--c:var(--s1)">Diferencia</th></tr></thead><tbody>'+rows.map(function(r){var d=Math.round((r[2]/r[1]-1)*100);return'<tr><td>'+r[0]+'</td><td>'+fm(r[1])+'</td><td>'+fm(r[2])+'</td><td>'+(a===b?"—":(d>=0?"+":"−")+Math.abs(d)+"%")+'</td></tr>'}).join("")+'</tbody>';}
+function rCx(){var x=CX[$("cvar").value];$("cx").innerHTML='<thead><tr><th>'+x.t+'</th>'+SEG.map(function(s,i){return'<th class="hc" style="--c:'+s.c+'">'+tag(i)+'</th>'}).join("")+'</tr></thead><tbody>'+x.c.map(function(c,j){return'<tr><td>'+c+'</td>'+x.m.map(function(r){return'<td>'+r[j].toFixed(1)+'%</td>'}).join("")+'</tr>'}).join("")+'</tbody>'}
+function rXT(){var B=BASES[$("base").value];$("xnote").textContent=B.n;var h='<thead><tr><th>Segmento generado</th>'+B.c.map(function(r){return'<th>'+r+'</th>'}).join("")+'</tr></thead><tbody>';
+B.m.forEach(function(r,i){var t=r.reduce(function(a,b){return a+b},0);h+='<tr><td>'+tag(i)+'</td>'+r.map(function(v){var p=v/t;return'<td style="background:color-mix(in srgb,var(--brand) '+Math.round(p*45)+'%,transparent)">'+fm(v)+' <span class="note">('+Math.round(p*100)+'%)</span></td>'}).join("")+'</tr>'});$("xt").innerHTML=h+'</tbody>'}
+function rRows(){var q=$("q").value.trim(),s=$("fseg").value,c=$("fcty").value,k=$("fcat").value,a=$("fage").value;
+cur=ROWS.filter(function(r){return(!q||r[0].indexOf(q)>-1)&&(s==="all"||r[1]===+s)&&(!c||ct(r[2])===c)&&(k===""||r[3]===+k)&&(a===""||r[4]===+a)});
+if(sortK)cur.sort(function(x,y){return(x[sortK]-y[sortK])*sortD});
+var n=cur.length,pages=Math.max(1,Math.ceil(n/PS));pg=Math.min(pg,pages-1);if(pg<0)pg=0;
+$("fcount").textContent=n+" de 40 clientes de ejemplo"+(s==="all"?"":" · el segmento tiene "+fm(SEG[+s].size)+" clientes en total");
+$("pginfo").textContent=n?"Página "+(pg+1)+" de "+pages:"";
+$("rows").innerHTML=n?cur.slice(pg*PS,pg*PS+PS).map(function(r,i){return'<tr><td data-l="Cliente"><button class="btn sec" data-cid="'+r[0]+'">CUST-'+r[0]+'</button></td><td data-l="Segmento">'+tag(r[1])+'</td><td data-l="País">'+ct(r[2])+'</td><td data-l="Categoría">'+CATS[r[3]]+'</td><td data-l="Compras">'+r[5]+'</td><td data-l="Valor">$'+r[6]+'</td><td data-l="Días">'+r[7]+'</td></tr>'}).join(""):'<tr><td colspan="7" class="note">Ningún cliente cumple estos filtros. Quita alguno o usa “Limpiar filtros”.</td></tr>'}
+function rFicha(id){var r=ROWS.filter(function(x){return x[0]===id})[0];if(!r)return;var S=SEG[r[1]],f=$("ficha");f.classList.remove("hide");
+function row(n,v,k,u){var av=S.v[k],d=Math.round((v/av-1)*100);return'<tr><td>'+n+'</td><td>'+u+v+'</td><td>'+u+fm(av)+'</td><td>'+(d>=0?"+":"−")+Math.abs(d)+'%</td></tr>'}
+f.innerHTML='<div class="row"><h3>Ficha del cliente CUST-'+id+'</h3><button class="btn sec" data-a="fx">Cerrar</button></div><p style="margin:6px 0"><span class="badge o">Segmento generado</span> '+tag(r[1])+'</p>'+
+'<div class="scroll"><table><thead><tr><th>Variable</th><th>Este cliente</th><th>Promedio del segmento</th><th>Diferencia</th></tr></thead><tbody>'+row("Compras acumuladas",r[5],0,"")+row("Valor promedio del pedido",r[6],2,"$")+row("Días desde la última compra",r[7],3,"")+row("Antigüedad (meses)",r[9],1,"")+'</tbody></table></div>'+
+'<p class="note">Satisfacción '+r[8]+'/5 · Devoluciones '+r[10]+' · Quejas '+r[11]+' · '+ct(r[2])+' · Categoría favorita: '+CATS[r[3]]+'</p><p style="margin:6px 0"><span class="badge w">Etiquetas originales del dataset (solo referencia)</span> '+ACT[r[12]]+' · '+RFMN[r[13]]+' · Lealtad: '+LOYN[r[14]]+'</p>';
+f.scrollIntoView({behavior:"smooth",block:"nearest"})}
+function rExp(){$("csvp").textContent="customer_id,segmento\n"+ROWS.slice(0,5).map(function(r){return"CUST-"+r[0]+","+SEG[r[1]].n}).join("\n")+"\n…";
+$("hist").innerHTML=HIST.length?'<table class="rt"><thead><tr><th>Fecha</th><th>Archivo</th><th>Contenido</th></tr></thead><tbody>'+HIST.slice().reverse().map(function(h){return'<tr><td data-l="Fecha">'+h[0]+'</td><td data-l="Archivo">'+h[1]+'</td><td data-l="Contenido">'+h[2]+'</td></tr>'}).join("")+'</tbody></table>':'<p class="note">Aún no has exportado archivos. Cuando lo hagas, aparecerán aquí.</p>'}
+function now(){try{return new Date().toLocaleString("es-MX",{dateStyle:"medium",timeStyle:"short"})}catch(e){return"hoy"}}
+function renderAll(){rHome();rCfg();rSegs();rCmp();rCx();rXT();rRows();rExp()}
+document.addEventListener("click",function(e){var t=e.target.closest("button,input[data-cfg]");if(!t||t.disabled)return;var d=t.dataset;
+if(d.seg!==undefined){hl=hl===+d.seg&&!d.go?-1:+d.seg;rSegs()}
+if(d.s)go(d.s);else if(d.go)go(d.go);
+else if(d.g){var g=+d.g;if(g===2){hl=1;rSegs();go("s5")}else if(g===3){$("fseg").value="1";pg=0;rRows();go("s8")}else go("s9")}
+else if(d.cfg){pickCfg=+d.cfg;rCfg();$("kcfg").textContent="K-Means, k="+CFG[pickCfg][0]}
+else if(d.sort){var k=+d.sort;if(sortK===k)sortD=-sortD;else{sortK=k;sortD=-1}rRows()}
+else if(d.pg){pg=Math.max(0,pg+ +d.pg);rRows()}
+else if(d.cid){rFicha(d.cid)}
+else if(d.x){pend=d.x;var csv=d.x==="csv";$("conf").classList.remove("hide");$("conf").innerHTML='<h3>Confirmar exportación</h3><p>Se generará <b>'+(csv?"asignaciones.csv":"reporte_perfiles.html")+'</b> con '+(csv?"50,000 filas (customer_id y segmento).":"5 secciones: datos, configuración, perfiles, comparación y limitaciones.")+'</p><div class="row l"><button class="btn act" data-a="ok">Confirmar y exportar</button><button class="btn sec" data-a="no">Cancelar</button></div>'}
+else if(d.a==="ok"){var c=pend==="csv";HIST.push([now(),c?"asignaciones.csv":"reporte_perfiles.html",c?"50,000 filas · K-Means, 4 segmentos":"5 secciones · K-Means, 4 segmentos"]);$("conf").classList.add("hide");rExp();toast("Archivo exportado y agregado al historial")}
+else if(d.a==="no"){$("conf").classList.add("hide")}
+else if(d.a==="gl"){var g=$("gl");g.classList.toggle("hide");document.querySelector('[data-a="gl"]').setAttribute("aria-expanded",!g.classList.contains("hide"))}
+else if(d.a==="fx"){$("ficha").classList.add("hide")}
+else if(d.a==="clr"){["q"].forEach(function(i){$(i).value=""});$("fseg").value="all";["fcty","fcat","fage"].forEach(function(i){$(i).value=""});pg=0;rRows()}
+else if(d.a==="load"){$("loadmsg").innerHTML='<div class="msg ok"><b>Archivo válido.</b> Se leyeron 50,000 registros y 53 columnas. Están todas las columnas necesarias.</div>'}
+else if(d.a==="bad"){$("loadmsg").innerHTML='<div class="msg er"><b>No se puede continuar.</b> Faltan las columnas total_purchases y days_since_last_purchase. Revisa el archivo y vuelve a cargarlo.</div>'}
+else if(d.a==="clean"){$("cleanst").textContent="Limpieza aplicada. Las reglas quedaron registradas.";toast("Reglas de limpieza registradas")}
+else if(d.a==="run"){var b=$("runbtn"),p=0;b.disabled=true;$("prog").classList.remove("hide");$("runmsg").innerHTML="";var iv=setInterval(function(){p+=10;$("progi").style.width=p+"%";if(p>=100){clearInterval(iv);b.disabled=false;$("prog").classList.add("hide");$("progi").style.width="0";REG.push([now(),"K-Means",CFG[pickCfg][0],"8","42","50,000"]);rCfg();$("runmsg").innerHTML='<div class="msg ok"><b>Agrupamiento listo.</b> Los 50,000 clientes tienen un segmento asignado. Ningún segmento tiene menos de '+CFG[pickCfg][3]+'% de los clientes.</div>'}},150)}});
+$("var").addEventListener("change",rSegs);$("mode").addEventListener("change",rSegs);$("cvar").addEventListener("change",rCx);$("base").addEventListener("change",rXT);
+$("ca").addEventListener("change",rCmp);$("cb").addEventListener("change",rCmp);$("dq").addEventListener("input",rDict);$("dg").addEventListener("change",rDict);
+["q","fseg","fcty","fcat","fage"].forEach(function(i){$(i).addEventListener(i==="q"?"input":"change",function(){pg=0;rRows()})});
+$("ren").addEventListener("input",function(e){var i=e.target.dataset.ren;if(i===undefined)return;SEG[+i].n=e.target.value||"Segmento "+SEG[+i].l;renderAll();fillSel()});
+function fillSel(){var a=$("ca").value||"0",b=$("cb").value||"1",s=$("fseg").value||"all",o=SEG.map(function(x,i){return'<option value="'+i+'">'+x.l+". "+esc(x.n)+'</option>'}).join("");
+$("ca").innerHTML=o;$("cb").innerHTML=o;$("ca").value=a;$("cb").value=b;$("fseg").innerHTML='<option value="all">Todos los segmentos</option>'+o;$("fseg").value=s}
+$("ren").innerHTML=SEG.map(function(s,i){return'<label class="note">Segmento '+s.l+' <input type="text" data-ren="'+i+'" value="'+esc(s.n)+'" maxlength="30"></label>'}).join("");
+$("cvar").innerHTML=Object.keys(CX).map(function(k){return'<option value="'+k+'">'+CX[k].t+'</option>'}).join("");
+var cs=Object.keys(ROWS.reduce(function(o,r){o[ct(r[2])]=1;return o},{})).sort();
+$("fcty").innerHTML='<option value="">Todos los países</option>'+cs.map(function(c){return'<option>'+c+'</option>'}).join("");
+$("fcat").innerHTML='<option value="">Todas las categorías</option>'+CATS.map(function(c,i){return'<option value="'+i+'">'+c+'</option>'}).join("");
+$("fage").innerHTML='<option value="">Todas las edades</option>'+AGES.map(function(c,i){return'<option value="'+i+'">'+c+'</option>'}).join("");
+$("cb").value="1";
+
+var D={"cats":["Automotriz","Belleza","Libros","Electrónica","Moda","Despensa","Salud y cuidado personal","Hogar y cocina","Oficina","Mascotas","Deporte y fitness","Juguetes"],"countries":["Alemania","Arabia Saudita","Australia","Brasil","Canadá","Emiratos Árabes Unidos","España","Estados Unidos","Francia","India","Italia","Japón","México","Pakistán","Países Bajos","Reino Unido","Singapur"],"cc":[[254,234,258,260,221,234,251,244,233,246,255,255],[248,228,251,247,273,250,246,227,251,223,249,254],[237,248,226,234,225,230,223,276,242,248,276,249],[268,249,226,226,279,275,233,227,255,204,223,230],[236,246,243,253,261,245,259,242,255,243,227,228],[254,238,256,257,230,295,233,241,227,238,251,231],[247,212,221,246,236,257,233,283,246,274,249,240],[269,249,232,255,237,270,270,239,255,241,251,239],[255,258,259,219,227,238,240,238,233,239,237,243],[230,215,244,243,254,243,227,249,256,252,252,249],[250,248,270,199,256,257,255,253,242,263,230,263],[271,223,239,254,238,248,213,248,238,231,255,218],[247,264,240,238,263,248,250,259,221,243,270,233],[249,244,275,262,260,252,268,229,220,239,239,267],[221,258,254,237,252,229,236,229,237,231,230,236],[242,233,235,269,255,264,246,252,263,227,249,229],[240,236,236,253,238,247,244,269,255,271,266,248]],"zones":{"Norteamérica":[7,4,12],"Sudamérica":[3],"Europa":[15,0,8,10,6,14],"Medio Oriente":[1,5],"Asia-Pacífico":[9,13,11,16,2]},"ct":[[2945,50835,5.0,3.0],[2947,49158,5.3,3.06],[2914,50571,6.1,3.01],[2895,50716,6.2,2.97],[2938,50179,4.7,3.0],[2951,50821,4.7,3.01],[2944,48148,6.0,3.02],[3007,50175,5.3,3.01],[2886,50170,5.9,2.97],[2914,48323,4.9,2.98],[2986,50001,5.1,3.01],[2876,50749,4.9,3.01],[2976,51110,6.1,2.97],[3004,49015,5.3,3.0],[2850,52454,5.5,3.05],[2964,50156,5.6,3.01],[3003,52007,5.3,3.06]],"prof":{"customer_segment":[["Consumidor",22507,50452,99.7,506,62.6,3.0,5.4,57891],["Premium",12423,50462,99.2,507,63.4,3.01,5.2,57998],["Pequeño negocio",9979,50191,98.9,507,63.3,3.01,5.5,57725],["Empresa",5091,49120,99.5,494,62.9,3.02,5.8,56296]],"rfm_category":[["Campeones",22971,76096,133.6,584,16.7,3.01,1.2,87464],["Leales",12774,44322,96.2,490,81.5,3.02,6.6,50781],["Leales potenciales",7714,19706,63.8,399,104.6,3.0,8.3,22537],["Necesitan atención",1078,2720,11.1,375,222.7,3.04,28.8,3130],["En riesgo",5463,8094,31.1,388,123.6,3.0,11.6,9347]],"behavior_segment":[["Comprador frecuente",14829,63318,124.8,507,2.2,3.01,1.2,72817],["Comprador regular",17853,55626,109.9,505,39.8,3.0,1.2,63889],["Comprador ocasional",15855,36547,72.8,504,145.8,3.01,12.6,41854],["Comprador nuevo",1463,1249,2.5,509,62.9,2.98,20.6,1432]],"tier":[["Diamante",20300,94660,139.2,697,62.3,3.01,4.9,108700],["Platino",10535,36675,96.0,478,64.0,3.01,5.0,42069],["Oro",9446,17076,73.3,374,62.9,3.01,4.8,19663],["Plata",4188,7397,56.7,297,63.1,3.01,5.0,8485],["Bronce",4259,2936,45.0,227,63.3,2.99,7.5,3374],["Sin nivel",1272,455,9.6,260,64.7,3.04,16.3,520]],"customer_value_category":[["Muy alto",20300,94660,139.2,697,62.3,3.01,4.9,108700],["Alto",10535,36675,96.0,478,64.0,3.01,5.0,42069],["Medio",9446,17076,73.3,374,62.9,3.01,4.8,19663],["Bajo",4188,7397,56.7,297,63.1,3.01,5.0,8485],["Muy bajo",5531,2366,36.8,234,63.6,3.0,9.5,2718]],"activity_status":[["Activo",29412,50378,99.3,507,7.5,3.01,1.5,57844],["En riesgo",5237,49462,99.7,497,43.8,2.99,1.5,57116],["Dormido",4994,51688,100.2,515,74.5,2.99,1.7,59456],["Inactivo",10357,49671,99.2,499,224.8,3.02,20.2,56846]],"engagement_level":[["Alta",15097,49936,99.6,500,62.6,3.01,5.2,57349],["Media",19842,50400,99.4,507,63.9,3.01,5.3,57773],["Baja",15061,50422,99.2,509,62.1,3.0,5.7,58029]]},"tot":{"n":50000,"spent":2513327308,"sat":3.01,"withTier":97.5},"risk":{"n":2702,"pct":5.4,"clv":140312881,"spent":122120469,"reasons":{"d":[53.6,11.4],"s":[91.8,36.9],"c":[64.8,31.6],"r":[66.1,33.3]},"avg":{"days":[183,56],"sat":[1.7,3.1],"comp":[9.5,6.8],"ret":[13.4,9.3]},"byTier":[["Diamante",986,4.9,187,1.7,106287171],["Platino",525,5.0,196,1.6,22279068],["Oro",455,4.8,182,1.7,8821287],["Plata",211,5.0,198,1.7,1831229],["Bronce",318,7.5,172,1.7,1001757],["Sin nivel",207,16.3,134,2.0,92369]],"rows":[["004726",0,"Arabia Saudita",103,2,13,13,90,57406,"scr"],["049559",0,"Emiratos Árabes Unidos",302,2,13,14,90,131194,"dscr"],["038568",0,"Singapur",246,2,14,17,90,60281,"dscr"],["048345",0,"Singapur",223,1,11,17,90,177323,"dscr"],["001638",0,"Emiratos Árabes Unidos",122,1,13,11,90,61485,"sc"],["002993",0,"Reino Unido",280,1,14,11,90,197954,"dsc"],["038007",0,"Reino Unido",156,2,13,11,89,82760,"sc"],["040673",0,"Arabia Saudita",160,2,11,15,89,74949,"scr"],["017557",0,"México",180,1,11,19,89,57008,"dscr"],["013948",0,"Singapur",171,1,13,15,89,120737,"scr"],["008384",1,"Pakistán",188,1,14,12,90,33088,"dsc"],["015090",1,"Estados Unidos",260,2,13,15,90,42754,"dscr"],["020029",1,"Brasil",126,1,12,15,89,26769,"scr"],["008510",1,"Francia",285,2,14,13,89,44403,"dscr"],["034277",1,"Estados Unidos",223,2,12,18,89,25134,"dscr"],["014331",1,"Italia",132,1,13,19,89,32906,"scr"],["008970",1,"Alemania",260,2,11,18,89,25491,"dscr"],["014584",1,"Australia",121,1,11,18,89,30285,"scr"],["032972",1,"Italia",163,1,12,12,88,32908,"sc"],["024282",1,"México",120,1,12,11,88,35794,"sc"],["008903",2,"Estados Unidos",303,2,13,18,90,22397,"dscr"],["036290",2,"Japón",272,2,11,14,90,24291,"dscr"],["040999",2,"Reino Unido",340,2,11,19,90,23965,"dscr"],["019192",2,"Reino Unido",155,2,14,13,90,11416,"scr"],["018369",2,"Pakistán",362,1,14,19,90,16904,"dscr"],["025234",2,"Brasil",226,1,14,15,90,24035,"dscr"],["013532",2,"España",322,1,12,19,89,21157,"dscr"],["005847",2,"India",107,1,13,15,89,15151,"scr"],["029980",2,"España",255,2,13,12,89,21773,"dsc"],["049492",2,"México",339,1,12,16,89,21040,"dscr"],["003593",3,"Reino Unido",169,2,13,18,90,9119,"scr"],["012533",3,"Francia",229,1,14,16,89,7003,"dscr"],["014348",3,"México",222,1,14,18,89,7201,"dscr"],["040177",3,"España",184,2,14,11,89,9700,"dsc"],["027917",3,"España",156,1,11,19,89,7567,"scr"],["016984",3,"Italia",354,1,12,13,88,6314,"dscr"],["007791",3,"Estados Unidos",325,2,13,13,88,6678,"dscr"],["027723",3,"Francia",92,2,14,15,88,7796,"scr"],["021761",3,"Brasil",357,2,11,18,87,9052,"dscr"],["006701",3,"Singapur",363,1,13,12,86,6485,"dsc"],["041715",4,"Brasil",122,1,14,11,100,1242,"sc"],["043538",4,"España",262,2,14,19,100,2459,"dscr"],["032672",4,"Brasil",336,1,7,14,95,3752,"dsr"],["012037",4,"Italia",287,1,9,11,94,1372,"ds"],["026594",4,"Pakistán",248,2,12,6,93,2667,"dsc"],["048772",4,"Italia",324,2,0,18,91,2280,"dsr"],["025827",4,"Singapur",363,2,14,17,90,3253,"dscr"],["013267",4,"Reino Unido",259,2,9,16,89,3167,"dsr"],["033162",4,"México",241,2,14,18,89,3816,"dscr"],["019545",4,"Estados Unidos",284,2,4,18,89,1474,"dsr"],["015611",5,"Canadá",342,2,12,18,100,790,"dscr"],["026432",5,"Australia",245,2,14,18,100,0,"dscr"],["022100",5,"Estados Unidos",223,1,12,19,100,637,"dscr"],["037290",5,"Japón",253,2,12,12,100,0,"dsc"],["041534",5,"México",211,1,13,17,100,0,"dscr"],["000881",5,"Países Bajos",232,1,14,11,99,374,"dsc"],["006133",5,"Arabia Saudita",104,1,8,19,94,0,"sr"],["006527",5,"Pakistán",332,2,9,18,94,506,"dsr"],["014529",5,"Reino Unido",310,1,3,11,93,129,"ds"],["039073",5,"Reino Unido",132,2,6,18,93,903,"sr"]]},"subs":[["Diamante",20300,40.6,76.5,94660,139.2,697,62.3,3.01,4.9,108700],["Platino",10535,21.1,15.4,36675,96.0,478,64.0,3.01,5.0,42069],["Oro",9446,18.9,6.4,17076,73.3,374,62.9,3.01,4.8,19663],["Plata",4188,8.4,1.2,7397,56.7,297,63.1,3.01,5.0,8485],["Bronce",4259,8.5,0.5,2936,45.0,227,63.3,2.99,7.5,3374],["Sin nivel",1272,2.5,0.0,455,9.6,260,64.7,3.04,16.3,520]],"subAgg":[["Con suscripción",48728,97.5,100.0,51567,101.8,512,62.9,3.01,5.1,59215],["Sin suscripción",1272,2.5,0.0,455,9.6,260,64.7,3.04,16.3,520]],"nets":[["Facebook",12604,14.94,25.25,50.07,3.02,50271],["Instagram",12312,15.06,25.28,49.85,2.99,50007],["LinkedIn",12564,15.03,25.02,50.01,3.0,49900],["TikTok",12512,14.98,25.03,49.98,3.02,50461],["Twitter",12659,15.0,25.16,49.98,3.0,50116],["YouTube",12400,14.96,24.95,50.37,3.0,50169]],"noNet":["Sin redes registradas",12420,15.12,25.03,50.31,3.0,50179],"allNet":["Todos",50000,15.04,25.07,50.03,3.01,50267],"byNum":[["0 redes",12420,15.12,25.03,50.31,3.0,50179],["1 red",12600,14.99,25.04,49.59,3.03,50684],["2 redes",12489,15.13,25.03,50.05,3.0,50361],["3 redes",12491,14.91,25.2,50.19,3.0,49838]],"dev":[["Computadora",12745,505,3.01,49963],["Celular",12388,506,2.99,50530],["Varios dispositivos",12469,507,3.03,50313],["Tableta",12398,503,3.0,50269]],"pay":[["Transferencia bancaria",10051,509,2.98,50592],["Pago contra entrega",10027,505,3.02,50277],["Tarjeta de crédito",10046,504,3.0,50180],["Tarjeta de débito",10090,506,3.02,50541],["Billetera digital",9786,502,3.01,49727]],"chan":[["En tienda",12535,507,3.0,50147],["Marketplace",12336,504,3.02,50136],["App móvil",12542,506,3.0,50486],["Sitio web",12587,505,3.01,50295]],"sat":{"dist":[9990,9959,9853,10059,10139],"byTier":[["Diamante",3.01,39.9,40.4],["Platino",3.01,39.8,40.4],["Oro",3.01,39.8,40.3],["Plata",3.01,39.8,40.9],["Bronce",2.99,41.1,40.0],["Sin nivel",3.04,37.6,40.7]],"risk":[1.71,3.08],"groups":{"risk":2480,"vip":12291,"vipSpent":916408782,"comp":6813,"ret":7101},"corr":{"complaint_count":-0.007,"return_count":-0.01,"days_since_last_purchase":0.002,"tenure_months":0.0,"total_purchases":0.006,"avg_order_value_usd":0.002}}};
+var RPS=10,rpg=0;
+function money(n){return n>=1e6?"$"+(n/1e6).toFixed(1)+" M":"$"+fm(Math.round(n))}
+function pp(v,g){return(v>=0?"+":"−")+Math.abs(v).toFixed(g===undefined?1:g)+" pp"}
+function kp(l,v){return'<div class="card kpi"><span>'+l+'</span><b>'+v+'</b></div>'}
+function sm(a){var s=0;a.forEach(function(x){s+=x});return s}
+function fb(w,c){return'<div class="bar" style="--c:'+c+';width:'+Math.max(w,1)+'%"></div>'}
+function opt(v,t){return'<option value="'+v+'">'+t+'</option>'}
+function ins(c,t,b,x,go){return'<button class="ins" style="--c:'+c+'" data-s="'+go+'"><span class="note">'+t+'</span><b>'+b+'</b><span class="note">'+x+'</span></button>'}
+function rcard(t,p,dat,ac,go,lab){return'<div class="card"><div class="row"><h3>'+t+'</h3><span class="badge '+(p==="Alta"?"w":"o")+'">Prioridad '+p+'</span></div><p style="margin:8px 0"><b>Dato:</b> '+dat+'</p><p style="margin:8px 0"><b>Acción sugerida:</b> '+ac+'</p><button class="btn sec" data-s="'+go+'">'+lab+'</button></div>'}
+function cmpT(a,b){if(!b)return"—";var r=a/b;return Math.abs(r-1)<0.05?"Sin diferencia":"×"+r.toFixed(r>=10?0:1)}
+var REAS=[["d","Más de 180 días sin comprar"],["s","Satisfacción baja (1 o 2)"],["c","10 quejas o más"],["r","13 devoluciones o más"]];
+var REAS_S={d:"180+ días sin comprar",s:"Satisfacción baja",c:"Muchas quejas",r:"Muchas devoluciones"};
+var TACT=["Contacto personal y oferta exclusiva","Contacto personal y oferta exclusiva","Oferta de regreso en su categoría favorita","Oferta de regreso en su categoría favorita","Correo con descuento","Invitación a unirse a la suscripción"];
+var SEA={"Otoño":[7,4,2,8,6],"Invierno":[3,11,1,5,4],"Primavera":[10,6,7,9],"Verano":[10,0,1,5]};
+var PFN={tier:["Suscripción (nivel de lealtad)","Nivel de suscripción del cliente. “Sin nivel” es un cliente sin suscripción."],customer_segment:["Tipo de cliente","Cómo está registrado el cliente: consumidor, premium, pequeño negocio o empresa."],rfm_category:["Categoría RFM","Qué tan reciente, frecuente y valioso es el cliente."],behavior_segment:["Comportamiento de compra","Con qué frecuencia compra el cliente."],customer_value_category:["Valor del cliente","Qué tan valioso es el cliente para el negocio."],activity_status:["Estado de actividad","Si el cliente sigue comprando o dejó de hacerlo."],engagement_level:["Nivel de interacción","Cuánto responde el cliente a la comunicación de la tienda."]};
+var PMT=[[1,"Clientes"],[2,"Gasto promedio (USD)"],[5,"Días desde la última compra"],[6,"Satisfacción"],[7,"% en riesgo alto"],[8,"Valor del cliente (USD)"]];
+function pfmt(i,v){return i===2||i===8||i===4?"$"+fm(v):i===7?v+"%":i===1?fm(v):v}
+function zIdx(v){if(v==="all")return D.countries.map(function(_,i){return i});if(v.charAt(0)==="R")return D.zones[v.slice(2)];return[+v.slice(2)]}
+function zCnt(v){var o=D.cats.map(function(){return 0});zIdx(v).forEach(function(i){D.cc[i].forEach(function(n,k){o[k]+=n})});return o}
+function zDiff(v){var c=zCnt(v),g=zCnt("all"),a=sm(c),b=sm(g);return c.map(function(n,k){return{k:k,sh:n/a*100,d:n/a*100-g[k]/b*100}})}
+function zName(v){return v==="all"?"todas las zonas":v.charAt(0)==="R"?v.slice(2):D.countries[+v.slice(2)]}
+function dvChart(arr){var mx=Math.max.apply(null,arr.map(function(x){return Math.abs(x.d)}))||1;
+return arr.slice().sort(function(a,b){return b.d-a.d}).map(function(x,i,all){var w=Math.abs(x.d)/mx*50,tg=i<3?'<br><span class="badge">Tendencia</span>':(i>=all.length-3?'<br><span class="badge w">Candidata a promoción</span>':'');
+return'<div class="dv"><span>'+D.cats[x.k]+tg+'</span><div class="dvt"><i class="'+(x.d>=0?"p":"n")+'" style="width:'+w+'%"></i></div><b>'+pp(x.d,2)+'</b></div>'}).join("")}
+function actFor(d){return d>=0.15?["Reforzar","Reforzar inventario y destacarla en portada"]:d<=-0.15?["Activar","Promoción o baja de precio temporal para impulsarla"]:["Mantener","Mantener y probar una oferta pequeña"]}
+function rC0(){var T=D.tot,R=D.risk,df=zDiff("all").sort(function(a,b){return b.d-a.d}),top=df[0],sat=D.sat.dist,ps=(sat[3]+sat[4])/T.n*100,pd=(sat[0]+sat[1])/T.n*100,dm=D.subs[0];
+$("c0b").innerHTML='<div class="kpis">'+kp("Clientes",fm(T.n))+kp("Gasto total",money(T.spent))+kp("Satisfacción promedio",T.sat.toFixed(1)+" de 5")+kp("Clientes en riesgo alto",fm(R.n)+" ("+R.pct.toFixed(1)+"%)")+kp("Con suscripción",T.withTier.toFixed(1)+"%")+'</div>'+
+'<h3 style="margin:4px 0 8px">Lo más importante hoy</h3><div class="rg">'+
+ins("var(--bad)","Clientes en riesgo",fm(R.n)+" clientes",R.avg.days[0]+" días sin comprar · satisfacción "+R.avg.sat[0].toFixed(1)+"/5 · "+money(R.clv)+" en juego","c3")+
+ins("var(--s0)","Categoría líder",D.cats[top.k],top.sh.toFixed(1)+"% de las preferencias","c1")+
+ins("var(--s1)","Suscripción Diamante",dm[2]+"% de los clientes",dm[3]+"% del gasto total","c4")+
+ins("var(--s2)","Satisfacción",ps.toFixed(0)+"% satisfechos · "+pd.toFixed(0)+"% insatisfechos","Atender primero a los de mayor valor","c7")+'</div>'+
+'<p class="foot">Datos de ejemplo (sintéticos), sin fechas ni productos: tendencias por categoría preferida.</p>'}
+function rC1a(){var R=D.risk,vip=R.byTier[0][1]+R.byTier[1][1],vclv=R.byTier[0][5]+R.byTier[1][5],ina=D.prof.activity_status[3],ns=D.nets.map(function(r){return r[2]}),mn=Math.min.apply(null,ns),mx=Math.max.apply(null,ns);
+$("c1a").innerHTML=rcard("Proteger a los clientes VIP en riesgo","Alta",fm(vip)+" clientes Diamante y Platino están en riesgo alto. Valor del cliente en juego: "+money(vclv)+".","Contacto personal de un ejecutivo y oferta exclusiva. Revisar por qué están insatisfechos.","c3","Ver clientes en riesgo")+
+rcard("Reactivar clientes inactivos","Alta",fm(ina[1])+" clientes inactivos, con "+ina[5]+" días sin comprar en promedio. El "+ina[7]+"% está en riesgo alto.","Campaña de regreso con una baja de precio en su categoría favorita.","c2","Ver perfiles oficiales")+
+rcard("Atender a los insatisfechos de alto valor","Media",fm(D.sat.groups.vip)+" clientes Diamante y Platino dieron una calificación de 1 o 2.","Encuesta breve para conocer el motivo y seguimiento por atención al cliente.","c7","Ver satisfacción")+
+rcard("Probar canales de marketing","Media","Ninguna red destaca: la conversión va de "+mn.toFixed(2)+"% a "+mx.toFixed(2)+"%.","Hacer pruebas A/B por red antes de concentrar la inversión en una sola.","c5","Ver marketing")}
+function rC1(){var z=$("rz").value,s=$("rs").value,df=zDiff(z),srt=df.slice().sort(function(a,b){return b.d-a.d});
+$("rzn").textContent="Diferencia en puntos porcentuales frente al promedio de todos los clientes. Zona: "+zName(z)+". Las diferencias son pequeñas, así que sirven para priorizar pruebas, no para decisiones definitivas.";
+$("rzc").innerHTML=dvChart(df);
+$("rst").innerHTML=SEA[s].map(function(k){var d=df[k].d,a=actFor(d);return'<tr><td data-l="Categoría">'+D.cats[k]+'</td><td data-l="Preferencia">'+df[k].sh.toFixed(1)+"% ("+pp(d,2)+')</td><td data-l="Qué hacer"><span class="badge '+(a[0]==="Activar"?"w":a[0]==="Reforzar"?"":"o")+'">'+a[0]+'</span> '+a[1]+'</td></tr>'}).join("")}
+function rC1ct(){$("rct").innerHTML=D.countries.map(function(c,i){var cc=D.cc[i],t=sm(cc),mx=0,mn=0;cc.forEach(function(n,k){if(n>cc[mx])mx=k;if(n<cc[mn])mn=k});var x=D.ct[i];
+return'<tr><td data-l="País">'+c+'</td><td data-l="Clientes">'+fm(x[0])+'</td><td data-l="Líder">'+D.cats[mx]+" ("+(cc[mx]/t*100).toFixed(1)+'%)</td><td data-l="Más baja">'+D.cats[mn]+" ("+(cc[mn]/t*100).toFixed(1)+'%)</td><td data-l="Gasto">$'+fm(x[1])+'</td><td data-l="Riesgo">'+x[2]+'%</td><td data-l="Satisfacción">'+x[3].toFixed(2)+'</td></tr>'}).join("")}
+function rC2(){var k=$("pf").value,m=+$("pm").value,rows=D.prof[k],mx=Math.max.apply(null,rows.map(function(r){return r[m]}));
+$("pfn").textContent=PFN[k][1];
+$("pfb").innerHTML=rows.map(function(r,i){var c=["var(--s0)","var(--s1)","var(--s2)","var(--s3)","var(--brand)","var(--muted)"][i%6];return'<div class="brow w"><span>'+r[0]+'</span><div>'+fb(r[m]/mx*100,c)+'</div><b>'+pfmt(m,r[m])+'</b></div>'}).join("");
+$("pft").innerHTML=rows.map(function(r){return'<tr>'+[0,1,2,3,4,5,6,7,8].map(function(i){var h=["Perfil","Clientes","Gasto promedio","Compras","Pedido promedio","Días sin comprar","Satisfacción","% en riesgo","Valor del cliente"][i];return'<td data-l="'+h+'">'+(i===0?r[0]:i===6||i===3||i===5?r[i]:pfmt(i,r[i]))+'</td>'}).join("")+'</tr>'}).join("")}
+function rC3(){var R=D.risk;
+$("c3k").innerHTML=kp("Clientes en riesgo alto",fm(R.n))+kp("% de la base",R.pct.toFixed(1)+"%")+kp("Valor del cliente en juego",money(R.clv))+kp("Promedio sin comprar",R.avg.days[0]+" días");
+$("c3w").innerHTML=REAS.map(function(r){var v=R.reasons[r[0]];return'<div class="pair"><b>'+r[1]+'</b><div><div class="b2"><span>En riesgo</span>'+fb(v[0],"var(--bad)")+v[0].toFixed(0)+'%</div><div class="b2"><span>Resto</span>'+fb(v[1],"var(--s0)")+v[1].toFixed(0)+'%</div></div></div>'}).join("");
+$("c3a").innerHTML=[["Días sin comprar",R.avg.days],["Satisfacción (1 a 5)",R.avg.sat],["Quejas",R.avg.comp],["Devoluciones",R.avg.ret]].map(function(r){return'<tr><td data-l="Señal">'+r[0]+'</td><td data-l="En riesgo"><b>'+r[1][0]+'</b></td><td data-l="Resto">'+r[1][1]+'</td></tr>'}).join("");
+$("c3t").innerHTML=R.byTier.map(function(r,i){return'<tr><td data-l="Nivel">'+r[0]+'</td><td data-l="En riesgo">'+fm(r[1])+'</td><td data-l="% del nivel">'+r[2]+'%</td><td data-l="Días">'+r[3]+'</td><td data-l="Satisfacción">'+r[4].toFixed(1)+'</td><td data-l="Valor en juego">'+money(r[5])+'</td><td data-l="Acción">'+TACT[i]+'</td></tr>'}).join("")}
+function rC3r(){var t=$("rt").value,r=$("rr").value,o=$("ro").value,l=D.risk.rows.filter(function(x){return(t==="all"||x[1]===+t)&&(r==="all"||x[9].indexOf(r)>-1)});
+l.sort(function(a,b){return o==="days"?b[3]-a[3]:o==="sat"?a[4]-b[4]:b[7]-a[7]});
+var n=l.length,pages=Math.max(1,Math.ceil(n/RPS));rpg=Math.max(0,Math.min(rpg,pages-1));
+$("c3c").textContent=n+" clientes de ejemplo, de los "+fm(D.risk.n)+" en riesgo.";$("c3p").textContent=n?"Página "+(rpg+1)+" de "+pages:"";
+$("c3r").innerHTML=n?l.slice(rpg*RPS,rpg*RPS+RPS).map(function(x){return'<tr><td data-l="Cliente">CUST-'+x[0]+'</td><td data-l="Nivel">'+D.subs[x[1]][0]+'</td><td data-l="País">'+x[2]+'</td><td data-l="Días">'+x[3]+'</td><td data-l="Satisfacción">'+x[4]+'/5</td><td data-l="Quejas">'+x[5]+'</td><td data-l="Devoluciones">'+x[6]+'</td><td data-l="Riesgo"><span class="badge w">'+x[7]+'/100</span></td><td data-l="Por qué">'+(x[9]?x[9].split("").map(function(c){return'<span class="badge o">'+REAS_S[c]+'</span> '}).join(""):"Sin señal destacada")+'</td></tr>'}).join(""):'<tr><td colspan="9" class="note">Ningún cliente cumple estos filtros. Cambia el nivel o la señal.</td></tr>'}
+var SM=["Nivel","Clientes","% de clientes","% del gasto total","Gasto promedio","Compras","Pedido promedio","Días sin comprar","Satisfacción","% en riesgo","Valor del cliente"];
+function f4(i,v){return i===4||i===6||i===10?"$"+fm(v):i===2||i===3||i===9?v+"%":i===1?fm(v):v}
+function cmpRows(A,B){return[1,4,5,6,7,8,9,10].map(function(i){return'<tr><td data-l="Indicador">'+SM[i]+'</td><td data-l="A">'+f4(i,A[i])+'</td><td data-l="B">'+f4(i,B[i])+'</td><td data-l="Comparativa">'+cmpT(A[i],B[i])+'</td></tr>'}).join("")}
+function rC4(){var S=D.subs,dm=S[0],sn=S[5];
+$("c4m").innerHTML='<div class="msg ok" style="margin:0 0 16px"><b>Lo principal.</b> El nivel Diamante es el '+dm[2]+'% de los clientes y aporta el '+dm[3]+'% del gasto. Los clientes sin suscripción son el '+sn[2]+'% y gastan en promedio $'+fm(sn[4])+', frente a $'+fm(D.subAgg[0][4])+' de quienes sí tienen suscripción.</div>';
+$("c4b").innerHTML=S.map(function(r,i){var c=["var(--s0)","var(--s1)","var(--s2)","var(--s3)","var(--brand)","var(--muted)"][i];return'<div class="pair"><b>'+r[0]+'</b><div><div class="b2"><span>Clientes</span>'+fb(r[2],c)+r[2]+'%</div><div class="b2"><span>Gasto total</span>'+fb(r[3],c)+r[3]+'%</div></div></div>'}).join("");
+$("c4h").innerHTML='<tr>'+SM.map(function(h){return'<th>'+h+'</th>'}).join("")+'</tr>';
+$("c4t").innerHTML=S.map(function(r){return'<tr>'+r.map(function(v,i){return'<td data-l="'+SM[i]+'">'+(i===0?v:f4(i,v))+'</td>'}).join("")+'</tr>'}).join("");
+$("c4a").innerHTML=cmpRows(D.subAgg[0],D.subAgg[1]);rC4c()}
+function rC4c(){var a=D.subs[+$("c4x").value],b=D.subs[+$("c4y").value];$("c4xa").textContent=a[0];$("c4ya").textContent=b[0];$("c4c").innerHTML=cmpRows(a,b)}
+function rC5(){var m=+$("c5m").value,A=D.allNet,nets=D.nets,ref=m===1?sm(nets.map(function(r){return r[1]}))/nets.length:A[m],all=nets.concat([D.noNet]),mx=Math.max.apply(null,all.map(function(r){return r[m]})),vals=nets.map(function(r){return r[m]}),hi=Math.max.apply(null,vals),lo=Math.min.apply(null,vals),sp=(hi-lo)/ref*100,best=nets[vals.indexOf(hi)][0],worst=nets[vals.indexOf(lo)][0];
+function fv(v){return m===1?fm(v):m===6?"$"+fm(v):v.toFixed(2)+"%"}
+$("c5r").innerHTML='<div class="msg '+(sp<5?"wa":"ok")+'" style="margin:0 0 16px"><b>'+(sp<5?"Ninguna red destaca.":"Hay diferencia entre redes.")+'</b> '+best+' tiene el valor más alto ('+fv(hi)+') y '+worst+' el más bajo ('+fv(lo)+'): una diferencia de '+sp.toFixed(1)+'%. '+(sp<5?"Es muy pequeña. Conviene probar campañas A/B en varias redes antes de invertir en una sola.":"Empieza por la de mayor valor y mide el resultado.")+' '+fm(D.noNet[1])+' clientes ('+(D.noNet[1]/D.tot.n*100).toFixed(1)+'%) no tienen redes registradas: se llega a ellos por correo.</div>';
+$("c5f").innerHTML=[["Abren el correo",A[4]],["Hacen clic",A[3]],["Compran",A[2]]].map(function(r){return'<div class="brow" style="grid-template-columns:130px 1fr 60px"><span>'+r[0]+'</span><div>'+fb(r[1],"var(--brand)")+'</div><b>'+r[1].toFixed(1)+'%</b></div>'}).join("");
+$("c5b").innerHTML=D.byNum.map(function(r){return'<tr><td data-l="Redes">'+r[0]+'</td><td data-l="Clientes">'+fm(r[1])+'</td><td data-l="Conversión">'+r[2].toFixed(2)+'%</td><td data-l="Clics">'+r[3].toFixed(2)+'%</td><td data-l="Apertura">'+r[4].toFixed(2)+'%</td><td data-l="Gasto">$'+fm(r[6])+'</td></tr>'}).join("");
+$("c5n").innerHTML=all.slice().sort(function(a,b){return b[m]-a[m]}).map(function(r){var d=(r[m]/ref-1)*100,g=r[0]===D.noNet[0];return'<div class="brow w"><span>'+r[0]+(g?' <span class="badge o">Referencia</span>':'')+'</span><div>'+fb(r[m]/mx*100,g?"var(--muted)":"var(--s0)")+'</div><b>'+fv(r[m])+' <span class="note">('+(d>=0?"+":"−")+Math.abs(d).toFixed(1)+'%)</span></b></div>'}).join("")}
+function rank(arr,m){var tot=sm(arr.map(function(r){return r[1]})),v=arr.map(function(r){return r[m]}),mx=Math.max.apply(null,v),mn=Math.min.apply(null,v);
+return arr.slice().sort(function(a,b){return b[m]-a[m]}).map(function(r){var x=r[m],tg=x===mx?'<span class="badge">Más alto</span>':x===mn?'<span class="badge w">Más bajo</span>':'',tx=m===1?fm(x)+" ("+(x/tot*100).toFixed(1)+"%)":m===2||m===4?"$"+fm(x):x.toFixed(2);
+return'<div class="brow w"><span>'+r[0]+' '+tg+'</span><div>'+fb(x/mx*100,"var(--brand)")+'</div><b>'+tx+'</b></div>'}).join("")}
+function note6(arr,m,what){var s=arr.slice().sort(function(a,b){return b[m]-a[m]}),a=s[0],b=s[s.length-1],rel=(a[m]-b[m])/a[m]*100;return what+": "+a[0]+" es el más alto y "+b[0]+" el más bajo, con "+rel.toFixed(1)+"% de diferencia. "+(rel<5?"Está casi parejo, así que no conviene descartar ninguna opción.":"La diferencia justifica reforzar lo que más se usa.")}
+function rC6(){var m=+$("c6m").value;$("c6d").innerHTML=rank(D.dev,m);$("c6p").innerHTML=rank(D.pay,m);$("c6c").innerHTML=rank(D.chan,m);
+$("c6dn").textContent=note6(D.dev,m,"Dispositivo");$("c6pn").textContent=note6(D.pay,m,"Pago")+" Se puede probar un incentivo para el método menos usado.";$("c6cn").textContent=note6(D.chan,m,"Canal")}
+var CL=[["complaint_count","Quejas"],["return_count","Devoluciones"],["days_since_last_purchase","Días sin comprar"],["tenure_months","Antigüedad"],["total_purchases","Compras"],["avg_order_value_usd","Pedido promedio"]];
+function rC7(){var S=D.sat,n=D.tot.n,d=S.dist,ps=(d[3]+d[4])/n*100,pn=d[2]/n*100,pd=(d[0]+d[1])/n*100,mx=Math.max.apply(null,d),LB=["1 · Muy insatisfecho","2 · Insatisfecho","3 · Neutral","4 · Satisfecho","5 · Muy satisfecho"];
+$("c7k").innerHTML=kp("Promedio",D.tot.sat.toFixed(1)+" de 5")+kp("Satisfechos (4 o 5)",ps.toFixed(1)+"%")+kp("Neutrales (3)",pn.toFixed(1)+"%")+kp("Insatisfechos (1 o 2)",pd.toFixed(1)+"%");
+$("c7d").innerHTML=d.map(function(v,i){return'<div class="brow w"><span>'+LB[i]+'</span><div>'+fb(v/mx*100,i<2?"var(--s2)":i===2?"var(--muted)":"var(--s0)")+'</div><b>'+fm(v)+'</b></div>'}).join("");
+$("c7t").innerHTML=S.byTier.map(function(r){return'<tr><td data-l="Nivel">'+r[0]+'</td><td data-l="Promedio">'+r[1].toFixed(2)+'</td><td data-l="Satisfechos">'+r[3]+'%</td><td data-l="Insatisfechos">'+r[2]+'%</td></tr>'}).join("");
+$("c7e").textContent="Ninguna variable del archivo explica la satisfacción: todas están cerca de 0 (en una escala de −1 a 1). Por eso la causa hay que preguntarla directamente a los clientes.";
+$("c7c").innerHTML=CL.map(function(c){return'<tr><td data-l="Variable">'+c[1]+'</td><td data-l="Relación">'+S.corr[c[0]].toFixed(3)+'</td></tr>'}).join("");
+$("c7r").innerHTML='<div class="pair" style="grid-template-columns:1fr"><div><div class="b2"><span>En riesgo</span>'+fb(S.risk[0]/5*100,"var(--bad)")+S.risk[0].toFixed(2)+'</div><div class="b2"><span>Resto</span>'+fb(S.risk[1]/5*100,"var(--s0)")+S.risk[1].toFixed(2)+'</div></div></div><p class="note">Promedio de satisfacción de 1 a 5. Mejorar la atención a los clientes en riesgo puede ayudar a retenerlos.</p>';
+var g=S.groups;$("c7g").innerHTML=[["Insatisfechos que ya están en riesgo",fm(g.risk),"Prioridad 1: contacto directo y solución del problema."],["Insatisfechos con suscripción Diamante o Platino",fm(g.vip),"Han gastado "+money(g.vipSpent)+" en total. Prioridad 2."],["Insatisfechos con 10 o más quejas",fm(g.comp),"Revisar los motivos de las quejas."],["Insatisfechos con 13 o más devoluciones",fm(g.ret),"Revisar calidad, tallas o descripción de producto."]].map(function(x){return'<div class="card"><span class="note">'+x[0]+'</span><b style="display:block;font-size:22px">'+x[1]+'</b><span class="note">'+x[2]+'</span></div>'}).join("");
+rC7s()}
+function rC7s(){var g=+$("c7s").value,n=D.tot.n,d=D.sat.dist,sa=d[3]+d[4],need=Math.max(0,Math.ceil(g/100*n)-sa),pool=d[0]+d[1]+d[2];$("c7sv").textContent=g+"%";
+$("c7so").innerHTML='Hoy hay '+fm(sa)+' clientes satisfechos ('+(sa/n*100).toFixed(1)+'%). Para llegar a <b>'+g+'%</b> hay que mejorar a <b>'+fm(need)+'</b> clientes, el '+(need/pool*100).toFixed(0)+'% de los neutrales e insatisfechos.'}
+function initNew(){
+$("rz").innerHTML=opt("all","Todas las zonas")+'<optgroup label="Regiones">'+Object.keys(D.zones).map(function(k){return opt("R:"+k,k)}).join("")+'</optgroup><optgroup label="Países">'+D.countries.map(function(c,i){return opt("C:"+i,c)}).join("")+'</optgroup>';
+$("pf").innerHTML=Object.keys(PFN).map(function(k){return opt(k,PFN[k][0])}).join("");
+$("pm").innerHTML=PMT.map(function(m){return opt(m[0],m[1])}).join("");
+$("rt").innerHTML=opt("all","Todos los niveles")+D.subs.map(function(r,i){return opt(i,r[0])}).join("");
+$("rr").innerHTML=opt("all","Todas las señales")+REAS.map(function(r){return opt(r[0],r[1])}).join("");
+var lv=D.subs.map(function(r,i){return opt(i,r[0])}).join("");$("c4x").innerHTML=lv;$("c4y").innerHTML=lv;$("c4x").value="0";$("c4y").value="5";
+["rz","rs"].forEach(function(i){$(i).addEventListener("change",rC1)});
+["pf","pm"].forEach(function(i){$(i).addEventListener("change",rC2)});
+["rt","rr","ro"].forEach(function(i){$(i).addEventListener("change",function(){rpg=0;rC3r()})});
+["c4x","c4y"].forEach(function(i){$(i).addEventListener("change",rC4c)});
+$("c5m").addEventListener("change",rC5);$("c6m").addEventListener("change",rC6);$("c7s").addEventListener("input",rC7s);
+document.addEventListener("click",function(e){var t=e.target.closest("button");if(t&&t.dataset.rp){rpg=Math.max(0,rpg+ +t.dataset.rp);rC3r()}});
+$("rz").value="all";rC0();rC1a();rC1();rC1ct();rC2();rC3();rC3r();rC4();rC5();rC6();rC7()}
+HELP.c0=["Tocar una tarjeta de “Lo más importante hoy” → abre esa sección","Pestañas del gráfico de segmentos → cambian la medida que se compara (gasto, pedido, compras, antigüedad, días sin comprar, reglas)","Vista cliente / Vista equipo (arriba) → muestra solo lo elegido para el cliente o todo el sistema","Elegir qué ve el cliente → activa o quita secciones de la Vista cliente"];
+HELP.c1=["Zona y temporada → actualizan la gráfica y el plan","Botones de las tarjetas → abren el detalle que respalda cada recomendación"];
+HELP.c2=["Clasificación → cambia el tipo de perfil oficial","Gráfica → cambia la variable que se compara"];
+HELP.c3=["Nivel y señal → filtran la lista de clientes","Ordenar → cambia el orden","Anterior y Siguiente → recorren las páginas"];
+HELP.c4=["Dos selectores de nivel → comparan cualquier par de niveles"];
+HELP.c5=["Ver → cambia la métrica que se compara entre redes"];
+HELP.c6=["Ordenar por → cambia el criterio con que se ordenan dispositivos, pagos y canales"];
+HELP.c7=["Control de meta → calcula cuántos clientes hay que mejorar para llegar a esa meta"];
+
+
+var MODE="cli",SHOW={c0:1,c1:1,c2:0,c3:1,c4:1,c5:1,c6:0,c7:1,v:1,r:1},VT=0;
+try{var sv=JSON.parse(localStorage.getItem("vcli")||"null");if(sv)for(var k in sv)SHOW[k]=sv[k]}catch(e){}
+var CLB={c0:"Resumen",c1:"Recomendaciones",c2:"Perfiles oficiales",c3:"Clientes en riesgo",c4:"Suscripciones",c5:"Marketing y redes",c6:"Dispositivos y pagos",c7:"Satisfacción",v:"Resumen: dónde está el valor",r:"Resumen: segmentos de IA comparados"};
+function renderCust(){$("custl").innerHTML=Object.keys(CLB).map(function(k){return'<label><input type="checkbox" data-k="'+k+'"'+(SHOW[k]?" checked":"")+(k==="c0"?" disabled":"")+'>'+CLB[k]+'</label>'}).join("")}
+function applyMode(){var cli=MODE==="cli";document.body.classList.toggle("cli",cli);
+document.querySelectorAll("#mode button").forEach(function(b){b.classList.toggle("on",b.dataset.m===MODE)});
+document.querySelectorAll("#nav button").forEach(function(b){var s=b.dataset.s;b.classList.toggle("hide",cli&&!(s[0]==="c"&&SHOW[s]))});
+document.querySelectorAll("#nav .grp").forEach(function(g){g.classList.toggle("hide",cli)});
+$("c0v").classList.toggle("hide",!SHOW.v);$("c0r").classList.toggle("hide",!SHOW.r);
+var on=document.querySelector(".screen:not(.hide)");if(cli&&on&&on.id[0]==="s")go("c9");
+else if(cli&&on&&!SHOW[on.id])go("c9")}
+function rVal(){var mx=45;
+$("c0v").innerHTML='<div class="card" style="margin-top:14px"><h3>Dónde está el valor de los clientes</h3><p class="note">Qué parte de los clientes y qué parte del gasto total aporta cada segmento.</p>'+
+SEG.map(function(s){return'<div class="brow"><div>'+'<span class="lt" style="background:'+s.c+'">'+s.l+'</span> <b>'+esc(s.n)+'</b></div><div><div class="b2"><span>Clientes</span><div class="bar" style="--c:'+s.c+';width:'+(s.pct/mx*100)+'%"></div><span>'+s.pct+'%</span></div><div class="b2"><span>Gasto total</span><div class="bar" style="--c:'+s.c+';opacity:.55;width:'+(s.sp/mx*100)+'%"></div><span>'+s.sp+'%</span></div></div><span></span></div>'}).join("")+'</div>'+
+'<div class="rg" style="margin-top:12px">'+SEG.map(function(s){return'<div class="card" style="border-top:4px solid '+s.c+'"><b style="font-size:24px">'+fm(s.size)+'</b><p style="margin:4px 0"><span class="lt" style="background:'+s.c+'">'+s.l+'</span> '+esc(s.n)+'</p><p class="note" style="margin:0 0 6px">'+s.d+'</p><p class="note" style="margin:0"><b>Qué hacer:</b> '+s.a+'</p></div>'}).join("")+'</div>'}
+var VTS=[["Gasto total",4,"Gasto total promedio por cliente (USD)",1],["Valor del pedido",2,"Valor promedio de cada pedido (USD)",1],["Compras",0,"Compras acumuladas por cliente",0],["Antigüedad",1,"Meses como cliente",0],["Días sin comprar",3,"Días desde la última compra",0],["Contra reglas",-1,"Cómo se reparten los clientes de cada segmento según las reglas del proyecto",0]];
+function rRes(){var t=VTS[VT],h='<div class="card" style="margin-top:14px"><div class="row"><h3>Segmentos de la IA comparados</h3><span class="note">'+t[2]+'</span></div><div class="vtabs">'+VTS.map(function(x,i){return'<button data-vt="'+i+'"'+(i===VT?' class="on"':'')+'>'+x[0]+'</button>'}).join("")+'</div>';
+if(t[1]>=0){var i=t[1],m=Math.max.apply(null,SEG.map(function(s){return s.v[i]}).concat([AVG[i]])),f=function(v){return t[3]?"$"+fm(Math.round(v)):(v>=100?fm(Math.round(v)):v)};
+h+='<div class="vb">'+SEG.map(function(s){return'<div class="vg"><div class="vp"><div style="height:'+(s.v[i]/m*85)+'%;background:'+s.c+'"><span>'+f(s.v[i])+'</span></div><div style="height:'+(AVG[i]/m*85)+'%;background:var(--muted);opacity:.55"><span>'+f(AVG[i])+'</span></div></div></div>'}).join("")+'</div><div class="vl">'+SEG.map(function(s){return'<span>'+s.l+' · '+esc(s.n)+'</span>'}).join("")+'</div><div class="lg"><span><i style="background:var(--brand)"></i>Segmento</span><span><i style="background:var(--muted);opacity:.55"></i>Promedio de todos los clientes</span></div>';
+var o=SEG.slice().sort(function(a,b){return b.v[i]-a.v[i]});h+='<p class="note">'+esc(o[0].n)+' tiene el valor más alto ('+f(o[0].v[i])+') y '+esc(o[3].n)+' el más bajo ('+f(o[3].v[i])+').</p>'}
+else{var B=BASES.rules,cl=["var(--s0)","var(--s3)","var(--s2)","var(--bad)"];
+h+=SEG.map(function(s,r){var tot=B.m[r].reduce(function(a,b){return a+b},0);return'<div class="brow"><div><span class="lt" style="background:'+s.c+'">'+s.l+'</span> '+esc(s.n)+'</div><div class="stk">'+B.m[r].map(function(v,j){return'<i title="'+B.c[j]+': '+fm(v)+'" style="width:'+(v/tot*100)+'%;background:'+cl[j]+'"></i>'}).join("")+'</div><span class="note">'+fm(tot)+'</span></div>'}).join("")+'<div class="lg">'+B.c.map(function(c,j){return'<span><i style="background:'+cl[j]+'"></i>'+c+'</span>'}).join("")+'</div><p class="note">Las reglas separan por días sin comprar; la IA además separa por valor del pedido y antigüedad. El segmento B coincide por completo con “Inactivo”.</p>'}
+$("c0r").innerHTML=h+'</div>'}
+document.addEventListener("click",function(e){var t=e.target.closest("button");if(!t)return;var d=t.dataset;
+if(d.m){MODE=d.m;applyMode()}
+else if(d.a==="cust"){var c=$("cust");c.classList.toggle("hide");renderCust()}
+else if(d.vt!==undefined){VT=+d.vt;rRes()}});
+document.addEventListener("change",function(e){var k=e.target.dataset&&e.target.dataset.k;if(k){SHOW[k]=e.target.checked?1:0;try{localStorage.setItem("vcli",JSON.stringify(SHOW))}catch(x){}applyMode()}});
+function initV8(){rPan();setTh(TH);rEv();initT();rReq();rVal();rRes();applyMode()}
+
+var REQ=[["Base",["customer_id"],"Un ID único por cliente"],
+["Segmentos de IA",["total_purchases","tenure_months","avg_order_value_usd","days_since_last_purchase"],"Números, sin vacíos"],
+["Resumen y valor",["total_spent_usd"],"Número en USD"],
+["Recomendaciones",["country","preferred_category_1","preferred_category_2","preferred_category_3"],"País y categorías con los mismos nombres"],
+["Perfiles oficiales",["customer_segment","rfm_category","behavior_segment","customer_value_category","activity_status","engagement_level","loyalty_tier"],"Texto"],
+["Clientes en riesgo",["churn_risk_category","churn_risk_score","days_since_last_purchase","satisfaction_score","complaint_count","return_count","customer_lifetime_value_usd"],"Riesgo: Very High, High, Medium, Low, Very Low"],
+["Suscripciones",["loyalty_tier","total_spent_usd"],"Diamond, Platinum, Gold, Silver, Bronze · vacío = sin suscripción"],
+["Marketing y redes",["social_media_presence","email_open_rate","click_through_rate","conversion_rate"],"Redes separadas por coma · tasas numéricas"],
+["Dispositivos y pagos",["device_used","payment_method","shopping_channel"],"Texto"],
+["Satisfacción",["satisfaction_score","satisfaction_level"],"Puntaje de 1 a 5"]];
+function cn(c){var x=DICT.filter(function(r){return r[0]===c})[0];return(x?esc(x[1])+" ":"")+"<code>"+c+"</code>"}
+function rReq(){$("reqt").innerHTML=REQ.map(function(r){return"<tr><td><b>"+r[0]+"</b></td><td>"+r[1].map(cn).join("<br>")+"</td><td>"+r[2]+"</td></tr>"}).join("")}
+function chkFile(f){if(!f)return;var m=$("loadmsg");m.innerHTML='<div class="msg wa">Revisando '+esc(f.name)+"…</div>";
+f.text().then(function(t){var lines=t.split(/\r?\n/).filter(function(x){return x}),cols=lines[0].replace(/^﻿/,"").split(",").map(function(x){return x.replace(/^"|"$/g,"").trim()}),rows=lines.length-1;
+var out=REQ.map(function(r){var miss=r[1].filter(function(c){return cols.indexOf(c)<0});return{n:r[0],miss:miss}}),bad=out.filter(function(o){return o.miss.length}),base=out[0].miss.length;
+m.innerHTML='<div class="msg '+(base?"er":bad.length?"wa":"ok")+'"><b>'+(base?"No se puede continuar: falta customer_id.":bad.length?"Funciona con limitaciones.":"Archivo válido.")+"</b> "+fm(rows)+(rows===1?" registro":" registros")+" · "+cols.length+" columnas.</div>"+
+'<table style="margin-top:10px"><tbody>'+out.map(function(o){return"<tr><td>"+(o.miss.length?"✖":"✔")+" "+o.n+"</td><td>"+(o.miss.length?"Falta: "+o.miss.map(function(c){return"<code>"+c+"</code>"}).join(", "):"Lista")+"</td></tr>"}).join("")+"</tbody></table>"}).catch(function(){m.innerHTML='<div class="msg er"><b>No se pudo leer el archivo.</b> Usa un .csv separado por comas.</div>'})}
+function dlTpl(){var cs=[];REQ.forEach(function(r){r[1].forEach(function(c){if(cs.indexOf(c)<0)cs.push(c)})});$("loadmsg").innerHTML='<div class="msg ok"><b>Primera fila de la plantilla ( '+cs.length+' columnas).</b> Cópiala en la primera fila de un CSV nuevo.</div><textarea readonly rows="3" style="width:100%;margin-top:8px;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font:12px monospace" id="tplx">'+cs.join(",")+"</textarea>";$("tplx").focus();$("tplx").select()}
+document.addEventListener("change",function(e){if(e.target.id==="chk")chkFile(e.target.files[0])});
+document.addEventListener("click",function(e){var t=e.target.closest("button");if(t&&t.dataset.a==="tpl")dlTpl()});
+HELP.s1=["Revisar otro archivo → dice qué secciones funcionan y qué columnas faltan","Ver plantilla → muestra la fila de encabezados que debe tener el CSV"];
+
+var TC=["Automotriz","Belleza","Libros","Electrónica","Moda","Despensa","Salud y cuidado personal","Hogar y cocina","Oficina","Mascotas","Deporte y fitness","Juguetes"];
+var TP=[
+["Plato elevado para mascotas","🥣",9,24,52,[27,29],"13 nov – 10 dic",[19,21],"10 – 31 ene"],
+["Cama ortopédica para perro","🐕",9,45,33,[49,54],"1 – 24 dic",[36,39],"5 ene – 15 feb"],
+["Planner 2027","📅",2,18,57,[20,22],"15 nov – 15 ene",[12,14],"1 – 28 feb"],
+["Colección de novelas de fantasía","📚",2,32,21,[35,38],"1 – 24 dic",[26,28],"10 ene – 15 feb"],
+["Auriculares con cancelación de ruido","🎧",3,89,46,[99,109],"13 – 16 nov",[74,79],"8 – 31 ene"],
+["Smartwatch deportivo","⌚",3,120,38,[129,139],"20 nov – 24 dic",[99,109],"10 ene – 15 feb"],
+["Sérum de vitamina C","🧴",1,28,41,[31,34],"1 – 14 feb",[22,24],"1 – 31 mar"],
+["Set de skincare","✨",1,39,29,[43,47],"1 – 10 may",[31,34],"15 jun – 15 jul"],
+["Chamarra impermeable","🧥",4,62,35,[68,74],"1 – 30 nov",[44,49],"15 feb – 15 mar"],
+["Tenis casuales","👟",4,58,27,[63,68],"13 nov – 24 dic",[45,49],"10 ene – 28 feb"],
+["Café de especialidad","☕",5,14,31,[15,17],"1 – 24 dic",[11,12],"10 – 31 ene"],
+["Snacks proteicos","🍫",5,19,24,[21,23],"2 – 31 ene",[15,17],"1 – 31 jul"],
+["Vitaminas multivitamínicas","💊",6,22,26,[24,26],"2 – 31 ene",[17,19],"1 – 31 jul"],
+["Masajeador cervical","💆",6,54,30,[59,65],"1 – 10 may",[42,46],"10 ene – 15 feb"],
+["Freidora de aire","🍟",7,79,44,[87,95],"13 nov – 24 dic",[62,67],"10 ene – 15 feb"],
+["Organizador de cocina","🧺",7,21,19,[23,25],"2 – 31 ene",[16,18],"1 – 31 ago"],
+["Silla ergonómica","🪑",8,140,25,[152,165],"1 – 30 ago",[112,122],"10 ene – 15 feb"],
+["Lámpara de escritorio LED","💡",8,26,22,[28,31],"1 – 30 ago",[20,22],"10 ene – 15 feb"],
+["Bandas de resistencia","🏋️",10,16,37,[18,20],"2 ene – 15 feb",[11,13],"1 – 30 jun"],
+["Botella térmica","🥤",10,25,28,[28,30],"15 abr – 15 jun",[19,21],"10 ene – 15 feb"],
+["Set de bloques de construcción","🧱",11,34,48,[38,42],"13 nov – 22 dic",[26,29],"7 – 31 ene"],
+["Juego de mesa familiar","🎲",11,29,40,[32,35],"20 nov – 24 dic",[22,24],"7 – 31 ene"],
+["Cámara para auto","📹",0,68,23,[74,80],"1 – 30 nov",[52,56],"10 ene – 15 feb"],
+["Kit de limpieza interior","🧽",0,18,17,[20,22],"1 – 30 abr",[13,15],"1 – 31 ago"]];
+var TCL=["var(--s0)","var(--s1)","var(--s2)","var(--s3)"];
+function spk(t,k){var p=[],i,v;for(i=0;i<12;i++){v=1+t/100*Math.pow(i/11,1.5)+Math.sin(i*1.7+k)*0.025;p.push(v)}var mn=Math.min.apply(null,p),mx=Math.max.apply(null,p);return'<svg viewBox="0 0 120 30" width="100%" height="30" aria-hidden="true"><polyline fill="none" stroke="var(--ok)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="'+p.map(function(v,i){return(i*120/11).toFixed(1)+","+(27-(v-mn)/(mx-mn)*24).toFixed(1)}).join(" ")+'"/></svg>'}
+function rC8(){var c=$("tc").value,n=+$("tn").value,df=zDiff($("tz").value),sh={},rk={},L;
+df.slice().sort(function(a,b){return b.sh-a.sh}).forEach(function(x,r){rk[x.k]=r+1});df.forEach(function(x){sh[x.k]=x});
+L=TP.map(function(p,i){return{p:p,i:i}}).sort(function(a,b){return rk[a.p[2]]-rk[b.p[2]]||b.p[4]-a.p[4]});L.forEach(function(x,r){x.r=r+1});
+if(c!=="all")L=L.filter(function(x){return x.p[2]===+c});L=L.slice(0,c==="all"?n:99);
+$("tgrid").innerHTML=L.map(function(x){var p=x.p,s=sh[p[2]];return'<div class="tp" style="--c:'+TCL[p[2]%4]+'"><div class="ti" aria-hidden="true">'+p[1]+'<span class="tr">#'+x.r+'</span><span class="tt">'+s.sh.toFixed(1)+'% pref.</span></div><div class="tb"><b>'+p[0]+'</b><span class="note">'+TC[p[2]]+' · puesto '+rk[p[2]]+' de 12 en preferencia</span><div class="tm2"><span>Precio actual</span><strong>$'+p[3]+'</strong></div>'+spk(p[4],x.i)+'<div class="tm2"><span>Alza en 4 semanas</span><span style="color:var(--ok);font-weight:700">▲ '+p[4]+'%</span></div><div class="tw u"><span>↑ Subir $'+p[5][0]+"–$"+p[5][1]+'</span><span>'+p[6]+'</span></div><div class="tw d"><span>↓ Bajar $'+p[7][0]+"–$"+p[7][1]+'</span><span>'+p[8]+'</span></div></div></div>'}).join("")}
+function initT(){$("tc").innerHTML='<option value="all">Todas</option>'+TC.map(function(t,i){return'<option value="'+i+'">'+t+"</option>"}).join("");$("tz").innerHTML=$("rz").innerHTML;$("tz").value="all";$("tz").addEventListener("change",rC8);$("tc").addEventListener("change",rC8);$("tn").addEventListener("change",rC8);rC8()}
+TT.c8="Tendencias";CLB.c8="Tendencias";SHOW.c8=SHOW.c8===undefined?1:SHOW.c8;
+HELP.c8=["Zona y Categoría → filtran; el orden usa la preferencia real de los clientes de esa zona","Top 10 / Todos → cambia cuántos productos se ven","Cada tarjeta → precio actual, alza de las últimas 4 semanas, y cuándo subir o bajar el precio con su rango"];
+
+var EV=[["↩️","Devoluciones rápidas","Reembolso en 3 días o menos tras la devolución",3.0,3.7,"Desde el 1 sep"],
+["💬","Quejas atendidas en 24 horas","Respuesta humana el mismo día",3.0,3.6,"Desde el 15 sep"],
+["🚚","Envío en 48 horas","Entrega rápida en la primera compra",3.0,3.5,"Desde el 1 oct"],
+["🎁","Beneficio tras la segunda compra","Cupón para clientes Platino y Oro",3.0,3.4,"Desde el 10 sep"],
+["📞","Seguimiento a los 7 días","Mensaje posventa con ayuda disponible",3.0,3.3,"Desde el 20 sep"]];
+var EC=["var(--s0)","var(--s1)","var(--s2)","var(--s3)","var(--bad)"];
+function rEv(){var d=D.sat.dist,ins=d[0]+d[1];
+$("c7e").innerHTML='<div class="row" style="margin:0 0 8px"><h3 style="margin:0">Qué mejoró la satisfacción</h3><span class="badge o">Ejemplo · datos simulados</span></div><div class="eg">'+EV.map(function(e,i){return'<div class="ev" style="--c:'+EC[i]+'"><span class="e" aria-hidden="true">'+e[0]+'</span><b>'+e[1]+'</b><span class="note">'+e[2]+'</span><span class="up">▲ +'+(e[4]-e[3]).toFixed(1)+' <small style="font-size:13px;font-weight:600;color:var(--muted)">de satisfacción</small></span><div class="sb" aria-hidden="true"><i class="a" style="width:'+(e[4]/5*100)+'%"></i><i class="d" style="width:'+(e[3]/5*100)+'%"></i></div><div class="m"><span>Antes '+e[3].toFixed(1)+'</span><span>Después '+e[4].toFixed(1)+'</span></div><div class="m"><span>'+e[5]+'</span><span>Aplicar a '+fm(ins)+' insatisfechos</span></div></div>'}).join("")+'</div>'}
+HELP.c7=(HELP.c7||[]).concat(["Tarjetas “Qué mejoró” → acciones que subieron la satisfacción, cuánto y desde cuándo"]);
+
+function rC0(){var T=D.tot,R=D.risk,df=zDiff("all").sort(function(a,b){return b.d-a.d}),top=df[0],sat=D.sat.dist,ps=(sat[3]+sat[4])/T.n*100,pd=(sat[0]+sat[1])/T.n*100,dm=D.subs[0];
+function t(c,l,v,s,g){return'<button class="ins" style="--c:'+c+'" data-s="'+g+'"><span class="note">'+l+'</span><b>'+v+'</b><span class="note">'+s+'</span></button>'}
+$("c0b").innerHTML='<div class="kpis">'+kp("Clientes",fm(T.n))+kp("Gasto total",money(T.spent))+kp("Satisfacción",T.sat.toFixed(1)+" de 5")+kp("En riesgo alto",fm(R.n)+" ("+R.pct.toFixed(1)+"%)")+kp("Con suscripción",T.withTier.toFixed(1)+"%")+'</div>'+
+'<div class="rg">'+t("var(--s0)","Categoría líder",D.cats[top.k],top.sh.toFixed(1)+"% de preferencia","c8")+t("var(--s1)","Diamante",dm[3]+"% del gasto","con "+dm[2]+"% de clientes","c4")+t("var(--s2)","Mayor valor",SEG[2].n,SEG[2].sp+"% del gasto con "+SEG[2].pct+"% de clientes","c0")+'</div>'+
+'<p class="foot">Datos de ejemplo (sintéticos), sin fechas ni productos.</p>'}
+function rVal(){var mx=45;
+$("c0v").innerHTML='<div class="card" style="margin-top:14px"><h3>Dónde está el valor</h3>'+SEG.map(function(s){return'<div class="brow"><div><span class="lt" style="background:'+s.c+'">'+s.l+'</span> <b>'+esc(s.n)+'</b></div><div><div class="b2"><span>Clientes</span><div class="bar" style="--c:'+s.c+';width:'+(s.pct/mx*100)+'%"></div><span>'+s.pct+'%</span></div><div class="b2"><span>Gasto</span><div class="bar" style="--c:'+s.c+';opacity:.55;width:'+(s.sp/mx*100)+'%"></div><span>'+s.sp+'%</span></div></div><span class="note">'+fm(s.size)+'</span></div>'}).join("")+'</div>'}
+
+var TH="light";
+function setTh(t){TH=t;document.documentElement.setAttribute("data-theme",t);var b=$("thm");if(b)b.textContent=t==="dark"?"☀ Claro":"☾ Oscuro";}
+TH="light";
+document.addEventListener("click",function(e){var b=e.target.closest("button");if(b&&b.dataset.th)setTh(TH==="dark"?"light":"dark")});
+function rPan(){var T=D.tot,R=D.risk,sat=D.sat.dist,n=T.n,ps=(sat[3]+sat[4])/n*100,pd=(sat[0]+sat[1])/n*100;
+function hd(t,g){return'<div class="row"><h3>'+t+'</h3><button class="lnk" data-s="'+g+'">Ver más →</button></div>'}
+var kp5='<div class="kpis">'+kp("Clientes",fm(T.n))+kp("Gasto total",money(T.spent))+kp("Satisfacción",T.sat.toFixed(1)+" de 5")+kp("En riesgo alto",fm(R.n)+" ("+R.pct.toFixed(1)+"%)")+kp("Con suscripción",T.withTier.toFixed(1)+"%")+'</div>';
+var val='<div class="pw s5c">'+hd("Dónde está el valor","c0")+SEG.map(function(s){return'<div class="pv"><span><span class="lt" style="background:'+s.c+'">'+s.l+'</span>'+esc(s.n.split(",")[0])+'</span><div><div class="b2"><span>Clientes</span><div class="bar" style="--c:'+s.c+';width:'+(s.pct/45*100)+'%"></div><span>'+s.pct+'%</span></div><div class="b2"><span>Gasto</span><div class="bar" style="--c:'+s.c+';opacity:.55;width:'+(s.sp/45*100)+'%"></div><span>'+s.sp+'%</span></div></div></div>'}).join("")+'</div>';
+var mxr=Math.max.apply(null,R.byTier.map(function(r){return r[1]}));
+var rsk='<div class="pw s3c">'+hd("Riesgo por suscripción","c3")+R.byTier.map(function(r){return'<div class="mr"><span>'+r[0]+'</span><div class="bar" style="--c:var(--bad);width:'+(r[1]/mxr*100)+'%"></div><span>'+fm(r[1])+'</span></div>'}).join("")+'<span class="note" style="margin-top:auto">'+R.avg.days[0]+' días sin comprar en promedio</span></div>';
+var SC=["var(--bad)","var(--s2)","var(--muted)","var(--s3)","var(--s0)"];
+var sa='<div class="pw s4c">'+hd("Satisfacción","c7")+'<div class="row l" style="gap:10px;align-items:baseline"><b style="font-size:30px;line-height:1">'+T.sat.toFixed(1)+'</b><span class="note">de 5</span></div><div class="stack" style="margin:4px 0">'+sat.map(function(v,i){return'<i title="'+(i+1)+': '+fm(v)+'" style="width:'+(v/n*100)+'%;background:'+SC[i]+'"></i>'}).join("")+'</div><div class="row"><span style="color:var(--ok);font-weight:700">'+ps.toFixed(0)+'% satisfechos</span><span style="color:var(--bad);font-weight:700">'+pd.toFixed(0)+'% insatisfechos</span></div><span class="note">Mejor acción de ejemplo: devoluciones rápidas (+0.7)</span></div>';
+var df=zDiff("all"),rk={};df.slice().sort(function(a,b){return b.sh-a.sh}).forEach(function(x,r){rk[x.k]=r+1});
+var L=TP.slice().sort(function(a,b){return rk[a[2]]-rk[b[2]]||b[4]-a[4]}).slice(0,3);
+var tr='<div class="pw s5c">'+hd("Tendencias","c8")+L.map(function(p){return'<div class="pt"><span class="e">'+p[1]+'</span><span><b>'+p[0]+'</b><small>'+TC[p[2]]+' · $'+p[3]+'</small></span><span class="r">▲ '+p[4]+'%<small>↑ $'+p[5][0]+'–$'+p[5][1]+' · '+p[6]+'</small></span></div>'}).join("")+'<span class="note">Categoría real · producto y precios de ejemplo</span></div>';
+var nets=D.nets.slice().sort(function(a,b){return b[3]-a[3]}),mxn=nets[0][3],spr=(nets[0][3]-nets[nets.length-1][3])/mxn*100;
+var mk='<div class="pw s3c">'+hd("Marketing: conversión","c5")+nets.slice(0,4).map(function(r){return'<div class="mr"><span>'+r[0]+'</span><div class="bar" style="--c:var(--s1);width:'+(r[3]/mxn*100)+'%"></div><span>'+r[3].toFixed(1)+'%</span></div>'}).join("")+'<span class="note" style="margin-top:auto">'+(spr<5?"Redes casi parejas ("+spr.toFixed(1)+"% de diferencia)":"Mejor: "+nets[0][0])+'</span></div>';
+function ud(a){var tot=sm(a.map(function(r){return r[1]})),s=a.slice().sort(function(x,y){return y[1]-x[1]}),f=s[0],l=s[s.length-1];return'<span><b class="up">▲ '+f[0]+' '+(f[1]/tot*100).toFixed(1)+'%</b><br><b class="dn">▼ '+l[0]+' '+(l[1]/tot*100).toFixed(1)+'%</b></span>'}
+var dp='<div class="pw s4c">'+hd("Dispositivos y pagos","c6")+'<div class="ud"><i>Dispositivo</i>'+ud(D.dev)+'<i>Pago</i>'+ud(D.pay)+'<i>Canal</i>'+ud(D.chan)+'</div><span class="note">Más (▲) y menos (▼) usado</span></div>';
+$("c9b").innerHTML='<div class="pn">'+kp5+val+rsk+sa+tr+mk+dp+'</div>'}
+TT.c9="Panel";CLB.c9="Panel";SHOW.c9=SHOW.c9===undefined?1:SHOW.c9;
+HELP.c9=["Cada tarjeta → “Ver más” abre esa sección completa","Botón Oscuro / Claro (arriba) → cambia el modo de color en todas las pantallas"];
+Object.keys(HELP).forEach(function(id){var l=$(id).querySelector(".lead");l.insertAdjacentHTML("afterend",'<details class="help"><summary>Qué puedes hacer aquí</summary><ul>'+HELP[id].map(function(h){return"<li>"+h+"</li>"}).join("")+"</ul></details>")});
+fillSel();$("cb").value="1";renderAll();rDict();initNew();initV8();
+</script>
+</body>
+</html>
